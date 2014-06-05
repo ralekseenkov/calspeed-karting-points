@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="row">
+    <p><a class="btn btn-primary" href="{{ url_for('season_overview', selected_season=selected_season) }}"
+          role="button">&laquo; Back to home page</a></p>
+</div>
+
+<div class="row">
+    <h1>CalSpeed Super Series {{ selected_season }}: Round {{ selected_round }}</h1>
+    <hr>
+</div>
+
+<div class="row">
+    <h3>Post-race adjustments</h1>
+</div>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>a</th>
+        <th>b</th>
+        <th>c</th>
+        <th>d</th>
+        <th>e</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<div class="row">
+    <h3>Table</h1>
+</div>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Position</th>
+        <th>Driver name</th>
+        <th>Qual</th>
+        <th>Heat 1</th>
+        <th>Heat 2</th>
+        <th>Main</th>
+        <th>Total</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for item in table.get_table() %}
+        <tr>
+            <td>{{ item.position }}</td>
+            <td>{{ item.driver }}</td>
+            <td>{{ table.find_detailed_points(item, "QUALIFYING") }}</td>
+            <td>{{ table.find_detailed_points(item, "HEAT", "1") }}</td>
+            <td>{{ table.find_detailed_points(item, "HEAT", "2") }}</td>
+            <td>{{ table.find_detailed_points(item, "MAIN") }}</td>
+            <td><b>{{ item["current_round"]["points"] }}</b></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+
+</table>
+
+{% endblock %}
+

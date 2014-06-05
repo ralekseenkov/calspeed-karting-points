@@ -1,0 +1,63 @@
+.navbar-inverse {
+    background-color: #E32135;
+    border-color: #E32135;
+}
+
+.navbar-inverse .navbar-brand {
+    color: #F0F0F0;
+}
+
+.glyphicon-ok {
+    color: #279100;
+}
+
+.glyphicon-pencil {
+    color: #FC5421;
+}
+
+.glyphicon-plus {
+    color: #FC5421;
+}
+
+.glyphicon-trash {
+
+}
+
+.button-enter-round-url {
+    background-color: #FFFFFF;
+    border: 0px;
+    padding: 0px;
+}
+
+.button-trash-round {
+    color: #444444;
+    background-color: #FFFFFF;
+    border: 0px;
+    padding: 0px;
+}
+
+.button-delete-driver-name-correction {
+    color: #444444;
+    background-color: #FFFFFF;
+    border: 0px;
+    padding: 0px;
+}
+
+.button-add-driver-name-correction {
+    background-color: #FFFFFF;
+    border: 0px;
+    padding: 0px 0px 0px 5px;
+}
+
+.link-adjust-points {
+    color: #444444;
+}
+
+table th.text-center, table td.text-center {
+    text-align: center;
+}
+
+.progress {
+    padding: 0px;
+    margin: 0px;
+}

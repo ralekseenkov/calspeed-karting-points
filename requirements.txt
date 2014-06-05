@@ -1,0 +1,6 @@
+flask
+flask-login
+flask-security
+requests
+tinydb
+python-Levenshtein

@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="row row-offcanvas row-offcanvas-right">
+
+    <div class="col-xs-12 col-sm-9">
+        <p class="pull-right visible-xs">
+            <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas">Toggle nav</button>
+        </p>
+
+        <div class="jumbotron">
+            <h2>CalSpeed Super Series {{ selected_season }}</h2>
+            {% if season_data.get_rounds_completed() == season_data.get_total_rounds() %}
+            <p class="text-warning">Completed: {{ season_data.get_total_rounds() }} rounds</p>
+            {% else %}
+            <p class="text-success">In progress: {{ season_data.get_rounds_completed() }} rounds out of {{season_data.get_total_rounds() }}</p>
+            {% endif %}
+            </p>
+        </div>
+
+        <div class="row">
+            {% for dclass, dclass_data in season_data.get_driver_classes().iteritems() %}
+            <div class="col-6 col-sm-6 col-lg-4">
+                <h2>{{ dclass_data["name"] }}</h2>
+
+                <p>{{ dclass_data["description"] }}</p>
+
+                <p><a class="btn btn-primary"
+                      href="{{ url_for('championship_table', selected_season=selected_season, driver_class="championship_" + dclass) }}" role="button">Results &raquo;</a></p>
+            </div>
+            {% endfor %}
+
+            {% if season_data.get_driver_teams() %}
+            <div class="col-6 col-sm-6 col-lg-4">
+                <h2>Teams</h2>
+
+                <p>Teams of three drivers each are built using the ‘team guidelines’</p>
+
+                <p><a class="btn btn-primary"
+                      href="{{ url_for('championship_table', selected_season=selected_season, driver_class="championship_TEAMS") }}" role="button">Results &raquo;</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="row">
+            <div class="col-6 col-sm-6 col-lg-12">
+                <h2>Individual rounds</h2>
+
+                <p>You can click on each individual round to see the points for qualifier, heats, and mains. </p>
+
+                <p>
+                    {% for round_obj in season_data.get_rounds_list() %}
+                    {% if round_obj.exists() %}
+                    <a class="btn btn-primary"
+                       href="{{ url_for('round_table', selected_season=selected_season, selected_round=round_obj.get_num()) }}" role="button">#{{ round_obj.get_num() }} &raquo;</a> &nbsp;
+                    {% else %}
+                    <a class="btn btn-default" role="button">#{{ round_obj.get_num() }} &raquo;</a> &nbsp;
+                    {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar" role="navigation">
+        <div class="list-group">
+            <h5>Select season:</h5>
+            {% for season in seasons %}
+            <a href="{{ url_for('season_overview', selected_season=season) }}"
+               class="list-group-item {% if season == selected_season %}active{% endif %}">{{ season }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <!--/span-->
+
+</div><!--/row-->
+
+{% endblock %}

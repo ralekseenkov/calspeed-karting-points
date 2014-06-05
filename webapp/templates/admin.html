@@ -1,0 +1,286 @@
+{% extends "layout.html" %}
+{% set admin = True %}
+{% block body %}
+
+<div class="row row-offcanvas row-offcanvas-right">
+
+    <div class="col-xs-12 col-sm-9">
+        <p class="pull-right visible-xs">
+            <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas">Toggle nav</button>
+        </p>
+
+        <div class="row">
+            <div class="col-6 col-sm-6 col-lg-12">
+                <h2>Rounds ({{ selected_season }})</h2>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Data</th>
+                            <th class="text-center">Action</th>
+                            <th class="text-center">Points</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for round_obj in season_data.get_rounds_list() %}
+                        <tr>
+                            <td>{{ round_obj.get_num() }}</td>
+                            <td>
+                                {% if round_obj.exists() %}
+                                    <span class="label label-success">Downloaded</span>
+                                    <a class="label label-primary" href="{{ round_obj.get_mylaps_url_web() }}">{{ round_obj.get_mylaps_url_web() }}</a>
+                                {% else %}
+                                    <span class="label label-default">Not downloaded</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if round_obj.exists() %}
+                                <button type="button" class="button-trash-round" value="{{ round_obj.get_num() }}" data-toggle="tooltip" data-placement="left" title="Delete data for round">
+                                    <span class="glyphicon glyphicon-trash"></span>
+                                </button>
+                                {% else %}
+                                <button type="button" class="button-enter-round-url" value="{{ round_obj.get_num() }}" data-toggle="tooltip" data-placement="left" title="Enter URL for round">
+                                    <span class="glyphicon glyphicon-pencil"></span>
+                                </button>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if round_obj.exists() %}
+                                    <a href="/" class="link-adjust-points">
+                                        <span class="glyphicon glyphicon-edit" data-toggle="tooltip" data-placement="right" title="Adjust points manually"></span>
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6 col-sm-6 col-lg-12">
+                <h2>Driver Name Corrections ({{ selected_season }})
+                    <button type="button" class="button-add-driver-name-correction" data-toggle="tooltip" data-placement="right" title="Add driver name correction">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                </h2>
+
+                {% if driver_name_corrections %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Incorrect Spelling</th>
+                            <th>Correct Spelling</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for e in driver_name_corrections %}
+                            <tr>
+                                <td>{{ e["name_incorrect"] }}</td>
+                                <td>{{ e["name_correct"] }}</td>
+                                <td class="text-center">
+                                    <button type="button" class="button-delete-driver-name-correction" data-toggle="tooltip" data-placement="right" title="Delete correction">
+                                        <span class="glyphicon glyphicon-trash"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    No driver name corrections yet
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6 col-sm-6 col-lg-12">
+                <h2>Similar Driver Names ({{ selected_season }})</h2>
+
+                {% if similar_drivers %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name #1</th>
+                            <th>Name #2</th>
+                            <th class="text-center">Distance</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for e in similar_drivers %}
+                            <tr>
+                                <td>{{ e["name1"] }}</td>
+                                <td>{{ e["name2"] }}</td>
+                                <td class="text-center">{{ e["distance"] }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    No similar drivers found
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar" role="navigation">
+        <div class="list-group">
+            <h5>Select season:</h5>
+            {% for season in seasons %}
+            <a href="{{ url_for('admin_season', selected_season=season) }}"
+               class="list-group-item {% if season == selected_season %}active{% endif %}">{{ season }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <!--/span-->
+
+</div><!--/row-->
+
+<script>
+    $("[data-toggle=tooltip]").tooltip({delay: { show: 250, hide: 100 }});
+
+    $(function(){
+        $('.button-enter-round-url').on('click', function(e){
+            e.preventDefault(); // preventing default click action
+
+            var url_cell = $(this).parent().parent().children()[1];
+            var selected_round = $(this).val();
+
+            bootbox.prompt("MyLaps URL for Round " + selected_round, function(result) {
+                if (result !== null) {
+                    // trying to initiate the download
+                    url_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Downloading...</div></div>';
+
+                    $.ajax({
+                        type: 'post',
+                        url: '{{ url_for('admin_round', selected_season=selected_season) }}',
+                        data: { action: 'download', round: selected_round, url: result },
+                        success: function() {
+                            location.reload();
+                        },
+                        error: function(){
+                            url_cell.innerHTML = '<span class="label label-danger">Failed to download</span>';
+                        }
+                    })
+              }
+
+            });
+
+        })
+    })
+
+    $(function(){
+        $('.button-trash-round').on('click', function(e){
+            e.preventDefault(); // preventing default click action
+
+            var url_cell = $(this).parent().parent().children()[1];
+            var selected_round = $(this).val();
+
+            bootbox.confirm("Are you sure you want to delete data for round " + selected_round, function(result) {
+                if (result) {
+                    // trying to start deletion
+                    url_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Deleting...</div></div>';
+
+                    $.ajax({
+                        type: 'post',
+                        url: '{{ url_for('admin_round', selected_season=selected_season) }}',
+                        data: { action: 'delete', round: selected_round },
+                        success: function() {
+                            location.reload();
+                        },
+                        error: function() {
+                            url_cell.innerHTML = '<span class="label label-danger">Failed to delete</span>';
+                        }
+                    })
+              }
+
+            });
+
+        })
+    })
+
+    $(function(){
+        $('.button-add-driver-name-correction').on('click', function(e){
+            e.preventDefault(); // preventing default click action
+
+            bootbox.dialog({
+                message: "<form id='driver_name_correction_form'>Change <input type='text' name='name_incorrect'/> to <input type='text' name='name_correct'/></form>",
+                title: "Add driver name correction",
+                buttons: {
+                    cancel: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function() {
+                        }
+                    },
+                    save: {
+                        label: "Save",
+                        className: "btn-primary",
+                        callback: function() {
+                            var name_incorrect = $('#driver_name_correction_form').find('input[name=name_incorrect]').val();
+                            var name_correct = $('#driver_name_correction_form').find('input[name=name_correct]').val();
+
+                            $.ajax({
+                                type: 'post',
+                                url: '{{ url_for('admin_driver_names', selected_season=selected_season) }}',
+                                data: { action: 'add_correction', name_incorrect: name_incorrect, name_correct: name_correct },
+                                success: function() {
+                                    location.reload();
+                                },
+                                error: function() {
+                                    alert('Failed to add driver name correction');
+                                    location.reload();
+                                }
+                            })
+
+                        }
+                    }
+                }
+            });
+
+        })
+    })
+
+    $(function(){
+        $('.button-delete-driver-name-correction').on('click', function(e){
+            e.preventDefault(); // preventing default click action
+
+            var name_incorrect = $(this).parent().parent().children()[0].innerHTML;
+            var name_correct = $(this).parent().parent().children()[1].innerHTML;
+            var action_cell = $(this).parent().parent().children()[2];
+
+            bootbox.confirm("Are you sure you want to delete driver name correction <b>" + name_incorrect + "</b> to <b>" + name_correct + "</b>", function(result) {
+                if (result) {
+                    // trying to start deletion
+                    action_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Deleting...</div></div>';
+
+                    $.ajax({
+                        type: 'post',
+                        url: '{{ url_for('admin_driver_names', selected_season=selected_season) }}',
+                        data: { action: 'delete_correction', name_incorrect: name_incorrect, name_correct: name_correct },
+                        success: function() {
+                            location.reload();
+                        },
+                        error: function() {
+                            action_cell.innerHTML = '<span class="label label-danger">Failed to delete</span>';
+                        }
+                    })
+              }
+
+            });
+
+        })
+    })
+
+</script>
+
+{% endblock %}

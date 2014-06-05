@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="row">
+    <p><a class="btn btn-primary" href="{{ url_for('season_overview', selected_season=selected_season) }}"
+          role="button">&laquo; Back to home page</a></p>
+</div>
+
+<div class="row">
+    <h1>CalSpeed Super Series {{ selected_season }}: {{ season_data.get_driver_classes()[dclass].name }}
+        Championship</h1>
+</div>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Position</th>
+        <th>Driver name</th>
+        {% for round in range(season_data.get_total_rounds()) %}
+        <th>{{ round+1 }}</th>
+        {% endfor %}
+        <th>Drops</th>
+        <th>Total</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for item in table.get_table() %}
+    <tr>
+        <td>{{ item.position }}</td>
+        <td>{{ item.driver }}</td>
+        {% for item in item.rounds %}
+        {% if item.dropped %}
+        <td class="red">{{ item.points }}</td>
+        {% else %}
+        <td>{{ item.points }}</td>
+        {% endif %}
+        {% endfor %}
+        <td>{{ item.dropped_points }}</td>
+        <td>{{ item.total_points }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+
+</table>
+
+{% endblock %}
+
