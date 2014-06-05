@@ -1,7 +1,9 @@
 calspeed-karting-points
 =======================
 
-It's an application for calculating points for Calspeed Super Series (http://www.calspeedkarting.com/)
+Application for calculating points for Calspeed Super Series (http://www.calspeedkarting.com/)
+
+The code is licensed under GPLv2
 
 Main features:
 - Frontend for the drivers
