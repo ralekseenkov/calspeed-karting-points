@@ -2,9 +2,10 @@ from operator import itemgetter
 
 
 class ResultsTable():
-    def __init__(self, total_rounds, drop_rounds):
+    def __init__(self, total_rounds, drop_rounds, rounds_list):
         self.total_rounds = total_rounds
         self.drop_rounds = drop_rounds
+        self.rounds_list = rounds_list
         self.lines = []
         self.table = []
 
@@ -56,7 +57,8 @@ class ResultsTable():
             # init driver points for each round
             round_points = []
             for round_num in range(self.total_rounds):
-                round_points.append({"round": round_num + 1, "points": 0, "dropped": False})
+                round_points.append({"round": round_num + 1, "points": 0, "dropped": False,
+                                     "exists": self.rounds_list[round_num].exists()})
 
             # go through each round and update points
             for round_obj in driver.get_points():
@@ -80,7 +82,8 @@ class ResultsTable():
             for drop_round in range(self.drop_rounds):
                 worst_item = None
                 for item in round_points:
-                    if not item["dropped"] and (worst_item is None or item["points"] < worst_item["points"]):
+                    if not item["dropped"] and item["exists"] \
+                            and (worst_item is None or item["points"] < worst_item["points"]):
                         worst_item = item
                 worst_item["dropped"] = True
 

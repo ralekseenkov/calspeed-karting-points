@@ -53,7 +53,7 @@ class SeasonData():
     def store_results_per_class(self, drivers, suffix=""):
         for dclass in self.get_driver_classes():
             # Filter out drivers which belong to this class
-            table = ResultsTable(self.get_total_rounds(), self.get_grop_rounds())
+            table = ResultsTable(self.get_total_rounds(), self.get_grop_rounds(), self.get_rounds_list())
             for driver in drivers:
                 if dclass in driver.get_classes():
                     table.add_line(driver)
@@ -79,7 +79,7 @@ class SeasonData():
 
     def get_results_for_class(self, dclass=None):
         # Filter out drivers which belong to this class
-        result = ResultsTable(self.get_total_rounds(), self.get_grop_rounds())
+        result = ResultsTable(self.get_total_rounds(), self.get_grop_rounds(), self.get_rounds_list())
 
         # determine the directory
         dirname = self.get_directory()
@@ -96,7 +96,7 @@ class SeasonData():
         return result
 
     def store_results_for_teams(self, drivers, suffix=""):
-        table = ResultsTable(self.get_total_rounds(), self.get_grop_rounds())
+        table = ResultsTable(self.get_total_rounds(), self.get_grop_rounds(), self.get_rounds_list())
         # table.process()
         return table
 
