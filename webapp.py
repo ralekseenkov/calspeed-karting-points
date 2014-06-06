@@ -7,6 +7,7 @@ from flask.ext.login import LoginManager, login_user
 from flask.ext.security import login_required
 from points.config import Config
 from points.round import Round
+from points.session import Session
 from webapp.auth import User
 from Levenshtein import distance
 
@@ -120,6 +121,59 @@ def admin_round(selected_season):
         return jsonify()
 
     return None
+
+
+@app.route('/admin_session_points/<int:selected_season>/<int:selected_round>',methods=['POST'])
+@app.route('/admin_session_points/<int:selected_season>/<int:selected_round>/<session_name>',
+           methods=['GET', 'POST'])
+@login_required
+def admin_session_points(selected_season, selected_round, session_name=None):
+    # Get and validate season
+    seasons = config.get_all_seasons()
+    if not selected_season in seasons:
+        abort(404, "Season data not found")
+    season_data = config.get_season_data(selected_season)
+
+    # Get parameters from POST call, if they are not passed through GET
+    if not session_name:
+        session_name = request.form['session_name']
+    session_type, session_id = Session.parse_name_into_stype_sid(session_name)
+
+    # Load objects
+    round_obj = Round(config, selected_season, selected_round)
+    session_obj = Session(config, round_obj, session_type, session_id)
+
+    # Update session approval status
+    if 'action' in request.form and request.form['action'] == 'set_approval_status':
+        status = request.form['status'] == 'approved'
+
+        print "Changing session approved status (%s, %s, %s) to %s" % (
+            selected_season, selected_round, session_obj.get_name(), status)
+        session_obj.store_approved_status(status)
+
+        return jsonify()
+
+    # Load session points and display the table
+    session_obj.load_points()
+
+    # Display standings for the session (with appropriate points)
+    return render_template("admin_session_points.html", selected_season=selected_season,
+                           selected_round=selected_round, round_obj=round_obj, session_obj=session_obj)
+
+
+@app.route('/admin_round_points/<int:selected_season>/<int:selected_round>')
+@login_required
+def admin_round_points(selected_season, selected_round):
+    # Get and validate season
+    seasons = config.get_all_seasons()
+    if not selected_season in seasons:
+        abort(404, "Season data not found")
+
+    round_obj = Round(config, selected_season, selected_round)
+    round_obj.load_points()
+
+    return render_template("admin_round_points.html", selected_season=selected_season,
+                           selected_round=selected_round, round_obj=round_obj)
 
 
 @app.route('/admin_driver_names/<int:selected_season>', methods=['POST'])

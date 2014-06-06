@@ -284,6 +284,9 @@ class Round():
             return sessions[0]
         raise LookupError("Expected only one qualifier, but found many: " + str(sessions))
 
+    def get_sessions_by_type(self):
+        return self.sessions_by_type
+
     def calc_points(self, drivers, season_data):
 
         # calculate points for the qualifier
@@ -335,6 +338,21 @@ class Round():
 
         self.load_points_session("MAIN")
 
+
+    @staticmethod
+    def generate_session_keys():
+
+        # noinspection PyListCreation
+        keys = []
+        keys.append(("QUALIFYING", ""))
+
+        for heatNum in ['1', '2']:
+            for heatLetter in ['A', 'B', 'C', 'D']:
+                keys.append(("HEAT", heatNum + heatLetter))
+
+        keys.append(("MAIN", ""))
+        return keys
+
     def get_mylaps_id(self):
         round_urls = self.config.get_db_connection().table('round_mylap_ids')
         results = round_urls.search(
@@ -375,3 +393,20 @@ class Round():
         jsonfiles = [f for f in listdir(dirname) if isfile(join(dirname, f)) and f.upper().endswith('.JSON')]
         for f in jsonfiles:
             os.remove(dirname + '/' + f)
+
+    def count_approved_sessions(self):
+        session_data_table = self.config.get_db_connection().table('session_data')
+        results = session_data_table.search(
+            (where('season') == self.year) &
+            (where('round') == self.num)
+        )
+        if not results:
+            return 0
+        return len(results)
+
+    def count_total_sessions(self):
+        return len(self.generate_session_keys())
+
+    def is_approved(self):
+        return self.count_approved_sessions() >= self.count_total_sessions()
+

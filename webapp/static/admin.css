@@ -27,6 +27,7 @@
     background-color: #FFFFFF;
     border: 0px;
     padding: 0px;
+    vertical-align: middle !important;
 }
 
 .button-trash-round {
@@ -34,6 +35,27 @@
     background-color: #FFFFFF;
     border: 0px;
     padding: 0px;
+    vertical-align: middle !important;
+}
+
+.button-approve-session-points {
+    color: #428BCA;
+    background-color: #FFFFFF;
+    border: 0px;
+    padding: 0px;
+    vertical-align: middle !important;
+}
+
+.button-adjust-driver-points {
+    vertical-align: middle !important;
+}
+
+.button-disapprove-session-points {
+    color: #FC5421;
+    background-color: #FFFFFF;
+    border: 0px;
+    padding: 0px;
+    vertical-align: middle !important;
 }
 
 .button-delete-driver-name-correction {
@@ -41,20 +63,33 @@
     background-color: #FFFFFF;
     border: 0px;
     padding: 0px;
+    vertical-align: middle !important;
 }
 
 .button-add-driver-name-correction {
     background-color: #FFFFFF;
     border: 0px;
     padding: 0px 0px 0px 5px;
+    vertical-align: middle !important;
 }
 
 .link-adjust-points {
     color: #444444;
+    vertical-align: middle !important;
+}
+
+.link-adjust-points-session {
+    color: #444444;
+    padding: 0px 0px 0px 5px;
+    vertical-align: middle !important;
 }
 
 table th.text-center, table td.text-center {
     text-align: center;
+}
+
+table th, table td {
+    vertical-align: middle !important;
 }
 
 .progress {

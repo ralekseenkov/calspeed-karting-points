@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+{% set admin = True %}
+{% block body %}
+
+<div class="row row-offcanvas row-offcanvas-right">
+
+    <div class="col-xs-12 col-sm-9">
+        <p class="pull-right visible-xs">
+            <button type="button" class="btn btn-primary btn-xs" data-toggle="offcanvas">Toggle nav</button>
+        </p>
+
+        <div class="row">
+            <div class="col-6 col-sm-6 col-lg-12">
+                <h2>Round {{ selected_round }} ({{ selected_season }}): post-race point adjustments</h2>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th class="text-center">Id</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Action</th>
+                            <th class="text-center">Points</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for stype, session_list in round_obj.get_sessions_by_type().iteritems() %}
+                        {% for session_obj in session_list %}
+                        <tr>
+                            <td>{{ session_obj.get_type() }}</td>
+                            <td class="text-center"> {% if session_obj.get_id() %}{{ session_obj.get_id() }}{% else %} - {% endif %}</td>
+                            <td class="text-center">
+                                {% if session_obj.is_approved() %}
+                                    <span class="label label-success">Approved</span>
+                                {% else %}
+                                    <span class="label label-default">Approval Pending</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if session_obj.is_approved() %}
+                                <button type="button" class="button-disapprove-session-points" value="{{ session_obj.get_name() }}" data-toggle="tooltip" data-placement="left" title="Disapprove session">
+                                    <span class="glyphicon glyphicon-thumbs-down"></span>
+                                </button>
+                                {% else %}
+                                <button type="button" class="button-approve-session-points" value="{{ session_obj.get_name() }}" data-toggle="tooltip" data-placement="left" title="Approve session">
+                                    <span class="glyphicon glyphicon-thumbs-up"></span>
+                                </button>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('admin_session_points', selected_season=selected_season, selected_round=round_obj.get_num(), session_name=session_obj.get_name()) }}" class="link-adjust-points-session" >
+                                    <span class="glyphicon glyphicon-edit" data-toggle="tooltip" data-placement="right" title="Adjust points manually"></span>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div><!--/row-->
+
+<script>
+    $("[data-toggle=tooltip]").tooltip({delay: { show: 250, hide: 100 }});
+
+    $(function(){
+        $('.button-approve-session-points').on('click', function(e){
+            e.preventDefault(); // preventing default click action
+
+            var session_name = $(this).val();
+
+            $.ajax({
+                type: 'post',
+                url: '{{ url_for('admin_session_points', selected_season=selected_season, selected_round=selected_round) }}',
+                data: { action: 'set_approval_status', session_name: session_name, status: 'approved' },
+                success: function() {
+                    location.reload();
+                },
+                error: function() {
+                    alert('Failed to update session status');
+                }
+            })
+
+        })
+    })
+
+    $(function(){
+        $('.button-disapprove-session-points').on('click', function(e){
+            e.preventDefault(); // preventing default click action
+
+            var session_name = $(this).val();
+
+            $.ajax({
+                type: 'post',
+                url: '{{ url_for('admin_session_points', selected_season=selected_season, selected_round=selected_round) }}',
+                data: { action: 'set_approval_status', session_name: session_name, status: 'disapproved' },
+                success: function() {
+                    location.reload();
+                },
+                error: function() {
+                    alert('Failed to update session status');
+                }
+            })
+
+        })
+    })
+
+</script>
+
+{% endblock %}

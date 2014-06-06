@@ -3,7 +3,7 @@ import json
 import requests
 import os
 import re
-
+from tinydb import where
 from driver import Driver
 
 
@@ -31,6 +31,15 @@ class Session():
         if len(self.sid) > 0:
             name += "-" + self.sid
         return name
+
+    @staticmethod
+    def parse_name_into_stype_sid(name):
+        result = name.split("-")
+        stype = result[0]
+        sid = "";
+        if len(result) > 1:
+            sid = result[1]
+        return stype, sid
 
     def get_short_name(self):
         if self.stype == "PRACTICE":
@@ -435,3 +444,31 @@ class Session():
         # store the table
         with open(fname, "rb") as json_file:
             self.data = json.load(json_file)
+
+    def is_approved(self):
+        session_data_table = self.config.get_db_connection().table('session_data')
+        results = session_data_table.search(
+            (where('season') == self.get_round().year) &
+            (where('round') == self.get_round().num) &
+            (where('session_name') == self.get_name())
+        )
+        if not results:
+            return None
+        return results[0]['approved']
+
+    def store_approved_status(self, approved_status):
+        session_data_table = self.config.get_db_connection().table('session_data')
+        session_data_table.remove(
+            (where('season') == self.get_round().year) &
+            (where('round') == self.get_round().num) &
+            (where('session_name') == self.get_name())
+        )
+        if approved_status:
+            session_data_table.insert(
+                {
+                    'season': self.get_round().year,
+                    'round': self.get_round().num,
+                    'session_name': self.get_name(),
+                    'approved': approved_status
+                }
+            )
