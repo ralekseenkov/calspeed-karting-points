@@ -16,6 +16,8 @@ class Session():
         self.filename = filename
         self.data = []
         self.name_corrections = self.config.get_driver_name_corrections_as_dict(self.round_obj.year)
+        self.point_adjustments = self.load_point_adjustments()
+        self.already_applied_point_adjustments = False
 
     def get_type(self):
         return self.stype
@@ -36,7 +38,7 @@ class Session():
     def parse_name_into_stype_sid(name):
         result = name.split("-")
         stype = result[0]
-        sid = "";
+        sid = ""
         if len(result) > 1:
             sid = result[1]
         return stype, sid
@@ -352,19 +354,16 @@ class Session():
     def sort_by_best_time(self):
         self.data = sorted(self.data, cmp=lambda x, y: self.compare_by_time(x, y), key=lambda x: x['best_lap_time'])
 
-    def get_driver_name_and_classes(self, driver, season_data):
+    def get_driver_name_and_classes(self, driver, season_data=None):
         # capture the part in square brackets "MR", assuming driver name will be something like "John Doe [M][R]"
         # note, that the driver can be on multiple classes: "M" means masters, "R" means rookie, etc.
         driver_class_list = re.findall("\[(.*?)\]", driver)
-
-        # retrieve all driver classes from config
-        valid_driver_classes = season_data.get_driver_classes()
 
         # put all classes into the set
         driver_classes = set("")
         for driver_class in driver_class_list:
             # check if it's a valid driver class
-            if not driver_class in valid_driver_classes:
+            if (season_data is not None) and (driver_class not in season_data.get_driver_classes()):
                 raise LookupError("Unrecognized driver class: " + driver)
             driver_classes.add(driver_class)
 
@@ -381,14 +380,70 @@ class Session():
         # return the tuple
         return driver_name, driver_classes
 
+    def apply_adjustment_move_driver(self, driver_name, is_move_up):
+        # find driver
+        idx = -1
+        for i in xrange(len(self.data)):
+            entry = self.data[i]
+            if entry["driver_name_canonical"] == driver_name:
+                idx = i
+                break
+
+        # if not found, return right away
+        if idx < 0:
+            return False
+
+        # swap drivers (up)
+        if is_move_up and idx - 1 >= 0:
+            t = self.data[idx]
+            self.data[idx] = self.data[idx - 1]
+            self.data[idx - 1] = t
+            return True
+
+        # swap drivers (down)
+        if not is_move_up and idx + 1 < len(self.data):
+            t = self.data[idx]
+            self.data[idx] = self.data[idx + 1]
+            self.data[idx + 1] = t
+            return True
+
+        return False
+
+    def apply_point_adjustments(self):
+        if self.already_applied_point_adjustments:
+            return
+
+        # iterate through stored adjustments
+        count_applied = 0
+        for driver_name, adjustment_list in self.point_adjustments.iteritems():
+            for adjustment in adjustment_list:
+                # for position-based adjustments
+                if adjustment['type'] == 'adjust_position':
+
+                    # apply adjustment for positions
+                    positions = adjustment['positions']
+                    for i in xrange(abs(positions)):
+                        if not self.apply_adjustment_move_driver(driver_name, positions <= 0):
+                            break
+
+                count_applied += 1
+
+        # if something was applied, we need to recalculate positions
+        self.reassign_positions()
+
+        self.already_applied_point_adjustments = True
+
     def calc_points(self, drivers, season_data):
 
         if not season_data.is_score_points(self.stype):
             raise LookupError("Points should be awarded, but not found")
 
+        # add an entry to the dictionary, if it's not there
         for entry in self.data:
             driver_name, driver_classes = self.get_driver_name_and_classes(entry["driver_name"], season_data)
-            position = entry["pos"]
+
+            # determine and store canonical name
+            entry["driver_name_canonical"] = driver_name
 
             # add an entry to the dictionary, if it's not there
             driver = Driver(driver_name)
@@ -399,6 +454,15 @@ class Session():
 
             # add discovered classes to the driver
             driver.add_classes(driver_classes)
+
+        # apply all stored point adjustments
+        self.apply_point_adjustments()
+
+        # process the actual points
+        for entry in self.data:
+            # determine driver position
+            driver = drivers[Driver(entry["driver_name_canonical"])]
+            position = entry["pos"]
 
             # process points
             if not self.is_integer(entry["pos"]):
@@ -472,3 +536,51 @@ class Session():
                     'approved': approved_status
                 }
             )
+
+    def load_point_adjustments(self):
+        session_adjustments = self.config.get_db_connection().table('session_adjustments')
+        list_of_adjustments = session_adjustments.search(
+            (where('season') == self.get_round().year) &
+            (where('round') == self.get_round().num) &
+            (where('session_name') == self.get_name())
+        )
+        result = {}
+        for item in list_of_adjustments:
+            if not item['driver_name'] in result:
+                result[item['driver_name']] = []
+            result[item['driver_name']].append(item)
+
+        return result
+
+    def store_adjustment_of_driver_position(self, driver, positions):
+        driver_name, driver_classes = self.get_driver_name_and_classes(driver)
+
+        session_adjustments = self.config.get_db_connection().table('session_adjustments')
+        session_adjustments.remove(
+            (where('season') == self.get_round().year) &
+            (where('round') == self.get_round().num) &
+            (where('session_name') == self.get_name()) &
+            (where('driver_name') == driver_name) &
+            (where('type') == 'adjust_position')
+        )
+        session_adjustments.insert(
+            {
+                'season': self.get_round().year,
+                'round': self.get_round().num,
+                'session_name': self.get_name(),
+                'driver_name': driver_name,
+                'type': 'adjust_position',
+                'positions': positions
+            }
+        )
+
+    def clear_adjustments_for_driver(self, driver):
+        driver_name, driver_classes = self.get_driver_name_and_classes(driver)
+
+        session_adjustments = self.config.get_db_connection().table('session_adjustments')
+        session_adjustments.remove(
+            (where('season') == self.get_round().year) &
+            (where('round') == self.get_round().num) &
+            (where('session_name') == self.get_name()) &
+            (where('driver_name') == driver_name)
+        )

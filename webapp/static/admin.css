@@ -92,6 +92,10 @@ table th, table td {
     vertical-align: middle !important;
 }
 
+.table > tbody > tr.point_adjustments > td {
+	background-color: #AADDFF;
+ }
+
 .progress {
     padding: 0px;
     margin: 0px;

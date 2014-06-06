@@ -123,7 +123,7 @@ def admin_round(selected_season):
     return None
 
 
-@app.route('/admin_session_points/<int:selected_season>/<int:selected_round>',methods=['POST'])
+@app.route('/admin_session_points/<int:selected_season>/<int:selected_round>', methods=['POST'])
 @app.route('/admin_session_points/<int:selected_season>/<int:selected_round>/<session_name>',
            methods=['GET', 'POST'])
 @login_required
@@ -150,6 +150,27 @@ def admin_session_points(selected_season, selected_round, session_name=None):
         print "Changing session approved status (%s, %s, %s) to %s" % (
             selected_season, selected_round, session_obj.get_name(), status)
         session_obj.store_approved_status(status)
+
+        return jsonify()
+
+    # Update driver points
+    if 'action' in request.form and request.form['action'] == 'adjust_driver_position':
+        driver_name = request.form['driver_name']
+        move_type = request.form['move_type']
+        positions = int(request.form['positions'])
+        if move_type == 'up':
+            positions = -positions
+
+        session_obj.store_adjustment_of_driver_position(driver_name, positions)
+        season_data.calc_and_store_points()
+
+        return jsonify()
+
+    if 'action' in request.form and request.form['action'] == 'clear_driver_adjustments':
+
+        driver_name = request.form['driver_name']
+        session_obj.clear_adjustments_for_driver(driver_name)
+        season_data.calc_and_store_points()
 
         return jsonify()
 

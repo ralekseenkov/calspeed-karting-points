@@ -237,6 +237,7 @@
                             var name_incorrect = $('#driver_name_correction_form').find('input[name=name_incorrect]').val();
                             var name_correct = $('#driver_name_correction_form').find('input[name=name_correct]').val();
 
+
                             $.ajax({
                                 type: 'post',
                                 url: '{{ url_for('admin_driver_names', selected_season=selected_season) }}',
