@@ -85,7 +85,8 @@ class ResultsTable():
                     if not item["dropped"] and item["exists"] \
                             and (worst_item is None or item["points"] < worst_item["points"]):
                         worst_item = item
-                worst_item["dropped"] = True
+                if worst_item:
+                    worst_item["dropped"] = True
 
             # calculate total points and dropped points
             total_points = sum(r["points"] for r in round_points if not r["dropped"])
