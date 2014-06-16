@@ -17,6 +17,7 @@
                     <thead>
                         <tr>
                             <th>Pos</th>
+                            <th class="text-center">Status</th>
                             <th class="text-center">Kart</th>
                             <th class="text-center">Driver</th>
                             <th class="text-center">Best on lap</th>
@@ -33,6 +34,7 @@
                         {% for item in session_obj.data %}
                         <tr {% if session_obj.point_adjustments[item.driver_name_canonical] %}class="point_adjustments"{% endif %}>
                             <td>{{ item.pos }}</td>
+                            <td class="text-center">{{ item.status }}</td>
                             <td class="text-center">{{ item.kart }}</td>
                             <td class="text-center">{{ item.driver_name }}</td>
                             <td class="text-center">{% if item.best_lap_number %}{{ item.best_lap_number }}{% else %}-{% endif %}</td>
@@ -46,9 +48,12 @@
                                       Edit <span class="caret"></span>
                                   </button>
                                   <ul class="dropdown-menu" role="menu">
-                                    <li><a href="#" class="adjust-points-change-position">Move up/down (position)</a></li>
-                                    <li><a href="#">Add/subtract points</a></li>
-                                    <li><a href="#" class="adjust-points-clear">Reset adjustments</a></li>
+                                    {% if session_obj.point_adjustments[item.driver_name_canonical] %}
+                                        <li><a href="#" class="adjust-points-clear">Reset adjustments</a></li>
+                                    {% else %}
+                                      <li><a href="#" class="adjust-points-change-position">Up/down position</a></li>
+                                      <li><a href="#" class="adjust-points-explicit-points">Change points</a></li>
+                                    {% endif %}
                                   </ul>
                                 </div>
                             </td>
@@ -76,8 +81,8 @@
         $('.adjust-points-change-position').on('click', function(e){
             e.preventDefault(); // preventing default click action
 
-            var driver_name = $(this).parent().parent().parent().parent().parent().children()[2].innerHTML;
-            var action_cell = $(this).parent().parent().parent().parent().parent().children()[8];
+            var driver_name = $(this).parent().parent().parent().parent().parent().children()[3].innerHTML;
+            var action_cell = $(this).parent().parent().parent().parent().parent().children()[9];
 
             bootbox.dialog({
                 message: "<form id='adjust-points-change-position-form'>Move <b>" + driver_name + "</b> <select name='move_type'><option value='up'>Up</option><option value='down'>Down</option></select> by <input type='text' name='positions' style='width: 40px; text-align: center'/> positions</form>",
@@ -119,12 +124,61 @@
         })
     })
 
+
+    $(function(){
+        $('.adjust-points-explicit-points').on('click', function(e){
+            e.preventDefault(); // preventing default click action
+
+            var driver_name = $(this).parent().parent().parent().parent().parent().children()[3].innerHTML;
+            var existing_points = $(this).parent().parent().parent().parent().parent().children()[8].innerHTML;
+            var action_cell = $(this).parent().parent().parent().parent().parent().children()[9];
+
+            bootbox.dialog({
+                message: "<form id='adjust-points-explicit-points-form'>Change points for <b>" + driver_name + "</b> from <b>" + existing_points + "</b> points to <input type='text' name='points' style='width: 40px; text-align: center'/> points</form>",
+                title: "Change driver points",
+                buttons: {
+                    cancel: {
+                        label: "Cancel",
+                        className: "btn-default",
+                        callback: function() {
+                        }
+                    },
+                    save: {
+                        label: "Save",
+                        className: "btn-primary",
+                        callback: function() {
+                            var points = $('#adjust-points-explicit-points-form').find('input[name=points]').val();
+
+                            action_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar progress-bar-warning" role="progressbar " aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Working...</div></div>';
+
+                            $.ajax({
+                                type: 'post',
+                                url: '{{ url_for('admin_session_points', selected_season=selected_season, selected_round=selected_round) }}',
+                                data: { action: 'adjust_driver_points', session_name: '{{ session_obj.get_name() }}', driver_name: driver_name, points: points },
+                                success: function() {
+                                    location.reload();
+                                },
+                                error: function() {
+                                    alert('Failed to change driver points');
+                                    location.reload();
+                                }
+                            })
+
+                        }
+                    }
+                }
+            });
+
+        })
+    })
+
+
     $(function(){
         $('.adjust-points-clear').on('click', function(e){
             e.preventDefault(); // preventing default click action
 
-            var driver_name = $(this).parent().parent().parent().parent().parent().children()[2].innerHTML;
-            var action_cell = $(this).parent().parent().parent().parent().parent().children()[8];
+            var driver_name = $(this).parent().parent().parent().parent().parent().children()[3].innerHTML;
+            var action_cell = $(this).parent().parent().parent().parent().parent().children()[9];
 
             bootbox.confirm("Are you sure you want to clear point adjustments for <b>" + driver_name + "</b>", function(result) {
                 if (result) {

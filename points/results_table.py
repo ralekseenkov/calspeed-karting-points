@@ -18,14 +18,6 @@ class ResultsTable():
     def set_table(self, table):
         self.table = table
 
-    @staticmethod
-    def is_integer(s):
-        try:
-            int(s)
-            return True
-        except ValueError:
-            return False
-
     def strip_to_round(self, round_num):
         # Keep only current round
         for row in self.table:
@@ -37,11 +29,15 @@ class ResultsTable():
         # Sort by points in the current round
         self.table = sorted(self.table, key=lambda x: (x["current_round"]["points"]), reverse=True)
 
-        # Assign positions
+        # assign positions
         position = 1
-        for row in self.table:
-            if self.is_integer(row["position"]):
-                row["position"] = str(position)
+        line_prev = None
+        for line in self.table:
+            if line_prev is None or line["current_round"]["points"] != line_prev["current_round"]["points"]:
+                line["position"] = position
+            else:
+                line["position"] = line_prev["position"]
+            line_prev = line
             position += 1
 
     @staticmethod

@@ -64,6 +64,9 @@ def admin_season(selected_season):
         abort(404, "Season data not found")
     season_data = config.get_season_data(selected_season)
 
+    # Uncomment this to recalculate points all the time
+    # season_data.calc_and_store_points()
+
     # Find similar drivers
     results_table = season_data.get_results_for_class()
     d = sorted([row["driver"] for row in results_table.table])
@@ -153,7 +156,7 @@ def admin_session_points(selected_season, selected_round, session_name=None):
 
         return jsonify()
 
-    # Update driver points
+    # Update driver position
     if 'action' in request.form and request.form['action'] == 'adjust_driver_position':
         driver_name = request.form['driver_name']
         move_type = request.form['move_type']
@@ -166,6 +169,17 @@ def admin_session_points(selected_season, selected_round, session_name=None):
 
         return jsonify()
 
+    # Update driver points
+    if 'action' in request.form and request.form['action'] == 'adjust_driver_points':
+        driver_name = request.form['driver_name']
+        points = int(request.form['points'])
+
+        session_obj.store_adjustment_of_driver_points(driver_name, points)
+        season_data.calc_and_store_points()
+
+        return jsonify()
+
+    # Clear all adjustments
     if 'action' in request.form and request.form['action'] == 'clear_driver_adjustments':
 
         driver_name = request.form['driver_name']

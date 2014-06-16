@@ -1,4 +1,3 @@
-import csv
 import json
 import requests
 import os
@@ -78,14 +77,6 @@ class Session():
 
         return None
 
-    @staticmethod
-    def is_integer(s):
-        try:
-            int(s)
-            return True
-        except ValueError:
-            return False
-
     def is_race(self):
         return self.stype == "MAIN" or self.stype == "HEAT"
 
@@ -132,83 +123,6 @@ class Session():
         # print name of the event
         print "  [x] Downloaded '%s': %s" % (self.get_name(), self.get_url(mylaps_id))
 
-    def read_from_csv(self):
-
-        # determine the directory
-        dirname = self.round_obj.get_directory()
-        fname = dirname + '/' + self.filename
-
-        # print name of the event
-        print "  [x] Reading %s from '%s'" % (self.get_name(), fname)
-
-        # Practice & Qualifier
-        #   "Pos" - integer
-        #   "No." - kart number
-        #   "Name" - driver name (spaces must be be trimmed from both ends)
-        #   "Overall BestTm" - best lap (can be empty for last drivers)
-
-        # Heat & Main
-        #   "Pos" - integer (but can be DNF or DQ for last drivers)
-        #   "No."
-        #   "Name"
-        #   "Best Tm" - best lap
-        #
-        #   "In Lap" - lap when best time was set
-        #   "Laps" - number of completed laps
-        #   "Diff" - time difference from P1 (can be empty for P1 and also for last drivers. can also be DNF or DQ)
-
-        # load the json
-        with open(fname, 'rb') as csv_file:
-            reader = csv.DictReader(csv_file)
-            for row in reader:
-
-                entry = {
-                    "pos": self.clean_string(row["Pos"]),
-                    "kart": self.clean_string(row["No."]),
-                    "driver_name": self.clean_string(row["Name"]),
-                    "best_lap_time": self.strip_leading_zeroes(
-                        self.clean_string(row.get("Overall BestTm"), row.get("Best Tm")))
-                }
-
-                if entry["best_lap_time"] is None:
-                    entry["best_lap_time"] = "N/A"
-
-                if self.is_race():
-                    entry["best_lap_number"] = self.clean_string(row.get("In Lap"))
-                    if entry["best_lap_number"] is None:
-                        entry["best_lap_number"] = "N/A"
-
-                    entry["laps_completed"] = self.clean_string(row["Laps"])
-                    entry["gap_to_leader"] = self.strip_leading_zeroes(self.clean_string(row["Diff"]))
-
-                    if entry["laps_completed"] is None:
-                        entry["laps_completed"] = "0"
-
-                    if entry["gap_to_leader"] is None:
-                        entry["gap_to_leader"] = entry["pos"]
-                    else:
-                        # to workaround differences between "1 Lap" and "1 lap"
-                        entry["gap_to_leader"] = entry["gap_to_leader"].upper()
-
-                    # workaround where pos is not set correctly
-                    if self.is_not_finished(entry["gap_to_leader"]):
-                        entry["pos"] = entry["gap_to_leader"]
-
-                self.data.append(entry)
-
-        # check if positions are in order
-        expected_pos = 1
-        for entry in self.data:
-            # check those who finished
-            if self.is_integer(entry["pos"]):
-                # can it be out of order?
-                if entry["pos"] != str(expected_pos):
-                    raise LookupError("Positions are not sorted: " + str(entry) + " vs. " + str(expected_pos))
-            expected_pos += 1
-
-        # calculate difference between best laps
-        self.recalculate_gaps()
-
     def read(self):
 
         # determine the directory
@@ -239,14 +153,13 @@ class Session():
             if entry["best_lap_time"] is None:
                 entry["best_lap_time"] = "N/A"
 
-            # process driver status and move it to pos
-            if row["status"] == "normal":
-                # do nothing
-                pass
-            elif self.is_not_finished(row["status"]):
-                # disqualified
-                entry["pos"] = row["status"].upper()
-            else:
+            # process driver status and copy it to pos too
+            entry["status"] = row["status"].upper()
+            if entry["status"] == 'NORMAL':
+                # change it to a shorter version
+                entry["status"] = 'OK'
+            elif not self.is_not_regular_finish(entry["status"]):
+                # if not DQ, DNF, or DNS, then raise exception
                 raise LookupError("Unrecognized driver status in the session: " + row["status"])
 
             if self.is_race():
@@ -267,18 +180,11 @@ class Session():
 
             self.data.append(entry)
 
-        # check if positions are in order
-        expected_pos = 1
-        for entry in self.data:
-            # check those who finished
-            if self.is_integer(entry["pos"]):
-                # can it be out of order?
-                if entry["pos"] != str(expected_pos):
-                    raise LookupError("Positions are not sorted: " + str(entry) + " vs. " + str(expected_pos))
-            expected_pos += 1
+        # reassign all positions
+        self.reassign_positions()
 
         # calculate difference between best laps
-        self.recalculate_gaps()
+        self.recalculate_best_lap_gaps()
 
     def merge_with(self, another):
         # this is useful for merging the results of mains into one single sheet
@@ -287,43 +193,38 @@ class Session():
             self.data.append(entry)
 
     @staticmethod
-    def is_not_finished(status):
-        status = status.upper()
+    def is_not_regular_finish(status):
         return status == 'DQ' or status == 'DNF' or status == 'DNS'
 
     def remove_not_finished(self):
-        # drivers who got disqualified or didn't finish don't have a place assigned, so this method get rids of them
-        self.data = [c for c in self.data if self.is_integer(c["pos"])]
+        # drivers who got disqualified, or didn't finish, or didn't start will be removed
+        # useful for merging the qualifiers together and keeping only drivers with valid best laps
+        self.data = [c for c in self.data if c["status"] == 'OK']
 
     def remove_na_best_time(self):
         # drivers who didn't go on a track don't have best lap time, so this method get rids of them
         self.data = [c for c in self.data if c["best_lap_time"] != "N/A"]
 
-    def move_not_finished_to_end(self):
-        # drivers who got disqualified (or didn't finish, or didn't start) don't have a place assigned
-        # so this method moves them to the end (useful for mains)
-        data_good = []
-        data_bad = []
-        for entry in self.data:
-            if self.is_integer(entry["pos"]):
-                data_good.append(entry)
-            else:
-                data_bad.append(entry)
-
-        self.data = data_good + data_bad
-
     def remove_duplicate_drivers_advanced_to_mains(self, season_data):
         # drivers who advance from one main to another (e.g. from B-main to A-main) are present in both groups
         # so, when calculating points, these duplicates should be removed
-        driver_names = set()
+        driver_names = {}
         for entry in self.data:
             driver_name, driver_classes = self.get_driver_name_and_classes(entry["driver_name"], season_data)
 
-            # if driver is already present in the map, the all following occurences should be removed
+            # if driver is already present in the map, the all following occurrences should be removed
             if driver_name in driver_names:
-                entry["to_be_removed"] = 1
+                # let's see which one needs to be removed
+                entry_higher = driver_names[driver_name]
+
+                # if driver finished in the higher entry, then the lower one needs to be removed
+                # otherwise, we need to remove the higher one (e.g. A-main = DQ, B-main = points)
+                if entry_higher["status"] == 'OK':
+                    entry["to_be_removed"] = 1
+                else:
+                    entry_higher["to_be_removed"] = 1
             else:
-                driver_names.add(driver_name)
+                driver_names[driver_name] = entry
 
         # remove drivers marked for removal
         self.data = [c for c in self.data if not "to_be_removed" in c]
@@ -331,11 +232,10 @@ class Session():
     def reassign_positions(self):
         position = 1
         for entry in self.data:
-            if self.is_integer(entry["pos"]):
-                entry["pos"] = str(position)
+            entry["pos"] = str(position)
             position += 1
 
-    def recalculate_gaps(self):
+    def recalculate_best_lap_gaps(self):
         leader = self.get_leader()
         for entry in self.data:
             entry["best_lap_diff"] = self.get_time_difference(entry["best_lap_time"], leader["best_lap_time"])
@@ -380,7 +280,7 @@ class Session():
         # return the tuple
         return driver_name, driver_classes
 
-    def apply_adjustment_move_driver(self, driver_name, is_move_up):
+    def lookup_driver_row_idx(self, driver_name):
         # find driver
         idx = -1
         for i in xrange(len(self.data)):
@@ -388,6 +288,11 @@ class Session():
             if entry["driver_name_canonical"] == driver_name:
                 idx = i
                 break
+
+        return idx
+
+    def apply_adjustment_move_driver(self, driver_name, is_move_up):
+        idx = self.lookup_driver_row_idx(driver_name)
 
         # if not found, return right away
         if idx < 0:
@@ -409,6 +314,16 @@ class Session():
 
         return False
 
+    def apply_adjustment_assign_points_to_driver(self, driver_name, points):
+        idx = self.lookup_driver_row_idx(driver_name)
+
+        # if not found, return right away
+        if idx < 0:
+            return False
+
+        self.data[idx]["points"] = points
+        return True
+
     def apply_point_adjustments(self):
         if self.already_applied_point_adjustments:
             return
@@ -417,26 +332,31 @@ class Session():
         count_applied = 0
         for driver_name, adjustment_list in self.point_adjustments.iteritems():
             for adjustment in adjustment_list:
+
                 # for position-based adjustments
                 if adjustment['type'] == 'adjust_position':
-
-                    # apply adjustment for positions
                     positions = adjustment['positions']
                     for i in xrange(abs(positions)):
                         if not self.apply_adjustment_move_driver(driver_name, positions <= 0):
                             break
 
+                # for point-based adjustments
+                if adjustment['type'] == 'adjust_points':
+                    points = adjustment['points']
+                    self.apply_adjustment_assign_points_to_driver(driver_name, points)
+
                 count_applied += 1
 
-        # if something was applied, we need to recalculate positions
-        self.reassign_positions()
+        # if something was applied, we need to reassign positions
+        if count_applied > 0:
+            self.reassign_positions()
 
         self.already_applied_point_adjustments = True
 
     def calc_points(self, drivers, season_data):
 
         if not season_data.is_score_points(self.stype):
-            raise LookupError("Points should be awarded, but not found")
+            raise LookupError("Points should be awarded, but can't find them in season configuration")
 
         # add an entry to the dictionary, if it's not there
         for entry in self.data:
@@ -460,20 +380,48 @@ class Session():
 
         # process the actual points
         for entry in self.data:
-            # determine driver position
+
+            # look up driver
             driver = drivers[Driver(entry["driver_name_canonical"])]
+
+            # determine driver position
             position = entry["pos"]
 
-            # process points
-            if not self.is_integer(entry["pos"]):
-                # zero points for DQ or DNF or DNS
-                entry["points"] = 0
-                driver.set_points(self, 0, entry["pos"])
-            else:
+            # if points were overwritten as a part of post-race adjustments, then assign this exact value
+            if "points" in entry:
+                driver.set_points(self, entry["points"], entry["status"])
+                continue
+
+            # assign points based on the status & position
+            if entry["status"] == 'OK':
                 # this is a regular finish
                 points = season_data.get_driver_points(self.stype, position)
                 entry["points"] = points
-                driver.set_points(self, points, "OK")
+                driver.set_points(self, points, entry["status"])
+
+            elif entry["status"] == 'DNS':
+                # DNS is 'did not start'
+                # person gets 0 points always. he stays on the rankings, but it creates a gap in points
+                entry["points"] = 0
+                driver.set_points(self, 0, entry["status"])
+
+            elif entry["status"] == 'DNF':
+                # DNF is 'did not finish'
+                # we just assign points in order in this case
+                # i.e. someone who crashed on lap 5 gets less points vs. someone who crashed on lap 6
+                points = season_data.get_driver_points(self.stype, position)
+                entry["points"] = points
+                driver.set_points(self, points, entry["status"])
+
+            elif entry["status"] == 'DQ':
+                # DQ - by default it's zero points
+                # it can be overwritten later by the admin
+                entry["points"] = 0
+                driver.set_points(self, 0, entry["status"])
+
+            else:
+                # unknown driver status
+                raise LookupError("Unknown driver status while assigning points: " + str(entry["status"]))
 
     def store_points(self, suffix=""):
 
@@ -571,6 +519,28 @@ class Session():
                 'driver_name': driver_name,
                 'type': 'adjust_position',
                 'positions': positions
+            }
+        )
+
+    def store_adjustment_of_driver_points(self, driver, points):
+        driver_name, driver_classes = self.get_driver_name_and_classes(driver)
+
+        session_adjustments = self.config.get_db_connection().table('session_adjustments')
+        session_adjustments.remove(
+            (where('season') == self.get_round().year) &
+            (where('round') == self.get_round().num) &
+            (where('session_name') == self.get_name()) &
+            (where('driver_name') == driver_name) &
+            (where('type') == 'adjust_points')
+        )
+        session_adjustments.insert(
+            {
+                'season': self.get_round().year,
+                'round': self.get_round().num,
+                'session_name': self.get_name(),
+                'driver_name': driver_name,
+                'type': 'adjust_points',
+                'points': points
             }
         )
 

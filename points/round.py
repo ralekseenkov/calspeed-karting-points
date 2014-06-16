@@ -43,7 +43,7 @@ class Round():
         # uppercase file name
         name = name_orig.upper()
 
-        # skip non-csv files
+        # skip files with incorrect extension
         if not name.endswith(file_extension.upper()):
             return None
 
@@ -60,11 +60,9 @@ class Round():
 
         # keywords to look for
         keywords = [
-            "QUALIFYING",  # CSV - qualifying is usually merged into one file
-            "QUALIFY",  # JSON - qualifying is given as multiple sessions, needs to be merged into one
-            "PRACTICE",  # CSV - merged into one file, JSON - given as multiple sessions
-            "MAIN",  # CSV, JSON - the same, individual mains
-            "HEAT"  # CSV, JSON - the same, individual heats
+            "QUALIFY",  # qualifying is given as multiple sessions, needs to be merged into one
+            "MAIN",  # individual main races
+            "HEAT"  # individual heat races
         ]
 
         # read session
@@ -89,28 +87,6 @@ class Round():
 
     def get_directory(self):
         return self.config.get_db_directory() + "/races/" + str(self.year) + "-round-" + str(self.num)
-
-    def read_session_from_csv(self, sessions, stype, sid=""):
-        # compose key
-        key = stype
-        if len(sid) > 0:
-            key += "-" + sid
-
-        if not key in sessions:
-            raise LookupError("Session data not found: " + key)
-
-        # look up session data
-        session_data = sessions[key]
-
-        # read this session from a file
-        session_obj = Session(self.config, self, session_data["type"], session_data["id"], session_data["filename"])
-        session_obj.read_from_csv()
-
-        # create list of sessions for each type
-        stype = session_data["type"]
-        if not stype in self.sessions_by_type:
-            self.sessions_by_type[stype] = []
-        self.sessions_by_type[stype].append(session_obj)
 
     def read_session(self, sessions, stype, sid=""):
         # compose key
@@ -143,39 +119,6 @@ class Round():
         jsonfiles = [f for f in listdir(dirname) if isfile(join(dirname, f)) and f.upper().endswith('.JSON')]
         return len(jsonfiles) > 0
 
-    def exists_as_csv(self):
-        dirname = self.get_directory()
-        if not isdir(dirname):
-            return False
-        csvfiles = [f for f in listdir(dirname) if isfile(join(dirname, f)) and f.upper().endswith('.CSV')]
-        return len(csvfiles) > 0
-
-    def read_from_csv(self):
-
-        # determine the directory
-        dirname = self.get_directory()
-
-        # read all sessions
-        onlyfiles = [f for f in listdir(dirname) if isfile(join(dirname, f))]
-
-        # put session data into map
-        sessions = {}
-        for f in onlyfiles:
-            session_data = self.parse_session_data_from_filename(f, ".CSV")
-            if session_data:
-                key = session_data["key"]
-                if key in sessions:
-                    raise NameError("Found duplicate data: " + key)
-                sessions[key] = session_data
-
-        # read all sessions
-        self.read_session_from_csv(sessions, "QUALIFYING")
-        for heatNum in ['1', '2']:
-            for heatLetter in ['A', 'B', 'C', 'D']:
-                self.read_session_from_csv(sessions, "HEAT", heatNum + heatLetter)
-        for mainLetter in ['A', 'B', 'C', 'D']:
-            self.read_session_from_csv(sessions, "MAIN", mainLetter)
-
     def read(self):
 
         # determine the directory
@@ -205,7 +148,7 @@ class Round():
         qualifying_merged.remove_na_best_time()
         qualifying_merged.sort_by_best_time()
         qualifying_merged.reassign_positions()
-        qualifying_merged.recalculate_gaps()
+        qualifying_merged.recalculate_best_lap_gaps()
         self.sessions_by_type["QUALIFYING"] = [qualifying_merged]
 
         # heats
@@ -302,7 +245,6 @@ class Round():
         for main in sorted(self.sessions_by_type["MAIN"], key=methodcaller('get_id')):
             self.main_merged.merge_with(main)
 
-        self.main_merged.move_not_finished_to_end()
         self.main_merged.remove_duplicate_drivers_advanced_to_mains(season_data)
         self.main_merged.reassign_positions()
         self.main_merged.calc_points(drivers, season_data)
