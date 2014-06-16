@@ -25,8 +25,16 @@ class Driver():
     def get_points(self):
         return self.points
 
-    def set_points(self, session, points, status=""):
+    def set_points(self, session, points, status, non_droppable):
         round_num = session.get_round()
         if not round_num in self.points:
             self.points[round_num] = {}
-        self.points[round_num][session] = {"points": points, "status": status}
+
+        data = {
+            "points": points,
+            "status": status
+        }
+        if non_droppable:
+            data["non_droppable"] = True
+
+        self.points[round_num][session] = data

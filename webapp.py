@@ -179,6 +179,15 @@ def admin_session_points(selected_season, selected_round, session_name=None):
 
         return jsonify()
 
+    # Mark event as non-droppable
+    if 'action' in request.form and request.form['action'] == 'mark_non_droppable':
+        driver_name = request.form['driver_name']
+
+        session_obj.store_non_droppable_event(driver_name)
+        season_data.calc_and_store_points()
+
+        return jsonify()
+
     # Clear all adjustments
     if 'action' in request.form and request.form['action'] == 'clear_driver_adjustments':
 

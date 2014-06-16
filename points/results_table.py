@@ -47,14 +47,27 @@ class ResultsTable():
                 return entry["points"] if entry["points"] > 0 else ""
         return ""
 
+    @staticmethod
+    def is_line_non_droppable(line):
+        for entry in line["current_round"]["detailed_points"]:
+            if "non_droppable" in entry:
+                return True
+        return False
+
     def process(self):
 
         for driver in self.lines:
             # init driver points for each round
             round_points = []
             for round_num in range(self.total_rounds):
-                round_points.append({"round": round_num + 1, "points": 0, "dropped": False,
-                                     "exists": self.rounds_list[round_num].exists()})
+                round_points.append(
+                    {
+                        "round": round_num + 1,
+                        "points": 0,
+                        "dropped": False,
+                        "exists": self.rounds_list[round_num].exists()
+                    }
+                )
 
             # go through each round and update points
             for round_obj in driver.get_points():
@@ -70,14 +83,30 @@ class ResultsTable():
                 item["detailed_points"] = []
                 for session in driver.get_points()[round_obj]:
                     points = driver.get_points()[round_obj][session]["points"]
+                    non_droppable = "non_droppable" in driver.get_points()[round_obj][session]
+
+                    detailed_points = {
+                        "stype": session.get_type(),
+                        "sid": session.get_id(),
+                        "points": points
+                    }
+
+                    if non_droppable:
+                        item["non_droppable"] = True
+                        detailed_points["non_droppable"] = True
+
                     item["points"] += points
-                    item["detailed_points"].append(
-                        {"stype": session.get_type(), "sid": session.get_id(), "points": points})
+                    item["detailed_points"].append(detailed_points)
 
             # drop some amount of worst rounds
             for drop_round in range(self.drop_rounds):
                 worst_item = None
                 for item in round_points:
+                    # do not drop rounds which are marked as non-droppable
+                    if "non_droppable" in item:
+                        continue
+
+                    # pick the worst round to be dropped
                     if not item["dropped"] and item["exists"] \
                             and (worst_item is None or item["points"] < worst_item["points"]):
                         worst_item = item

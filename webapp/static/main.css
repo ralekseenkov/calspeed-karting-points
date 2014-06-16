@@ -1,3 +1,13 @@
 .table > tbody > tr > td.dropped_points {
 	background-color: #AADDFF;
- }
+}
+
+.table > tbody > tr > td.non_droppable {
+	background-color: yellow;
+	color: red;
+}
+
+.table > tbody > tr.non_droppable > td {
+	background-color: yellow;
+	color: red;
+}

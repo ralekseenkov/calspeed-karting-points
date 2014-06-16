@@ -32,6 +32,8 @@
         {% for item in item.rounds %}
         {% if item.dropped %}
         <td class="dropped_points">{{ item.points }}</td>
+        {% elif item.non_droppable %}
+        <td class="non_droppable">{{ item.points }}</td>
         {% elif item.exists %}
         <td>{{ item.points }}</td>
         {% else %}

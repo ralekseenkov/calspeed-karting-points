@@ -45,14 +45,16 @@
                             <td class="text-center">
                                 <div class="btn-group">
                                   <button type="button" class="btn btn-primary btn-sm dropdown-toggle button-adjust-driver-points" data-toggle="dropdown">
-                                      Edit <span class="caret"></span>
+                                    Edit <span class="caret"></span>
                                   </button>
                                   <ul class="dropdown-menu" role="menu">
+                                    <li><a href="#" class="adjust-points-change-position">Up/down position</a></li>
+                                    <li><a href="#" class="adjust-points-explicit-points">Change points</a></li>
+                                    {% if session_obj.get_name() == 'MAIN' %}
+                                      <li><a href="#" class="mark-non-droppable">Mark as non-droppable</a></li>
+                                    {% endif %}
                                     {% if session_obj.point_adjustments[item.driver_name_canonical] %}
-                                        <li><a href="#" class="adjust-points-clear">Reset adjustments</a></li>
-                                    {% else %}
-                                      <li><a href="#" class="adjust-points-change-position">Up/down position</a></li>
-                                      <li><a href="#" class="adjust-points-explicit-points">Change points</a></li>
+                                      <li><a href="#" class="adjust-points-clear">Reset adjustments</a></li>
                                     {% endif %}
                                   </ul>
                                 </div>
@@ -167,6 +169,38 @@
                         }
                     }
                 }
+            });
+
+        })
+    })
+
+
+    $(function(){
+        $('.mark-non-droppable').on('click', function(e){
+            e.preventDefault(); // preventing default click action
+
+            var driver_name = $(this).parent().parent().parent().parent().parent().children()[3].innerHTML;
+            var action_cell = $(this).parent().parent().parent().parent().parent().children()[9];
+
+            bootbox.confirm("Are you sure you want to mark this event for <b>" + driver_name + "</b> as <b>non-droppable</b>?", function(result) {
+                if (result) {
+                    // trying to start deletion
+                    action_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar progress-bar-warning" role="progressbar " aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Working...</div></div>';
+
+                    $.ajax({
+                        type: 'post',
+                        url: '{{ url_for('admin_session_points', selected_season=selected_season, selected_round=selected_round) }}',
+                        data: { action: 'mark_non_droppable', session_name: '{{ session_obj.get_name() }}', driver_name: driver_name },
+                        success: function() {
+                            location.reload();
+                        },
+                        error: function() {
+                            alert('Failed to mark event as non-droppable for the driver');
+                            location.reload();
+                        }
+                    })
+              }
+
             });
 
         })

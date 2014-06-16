@@ -26,7 +26,7 @@
 
     <tbody>
     {% for item in table.get_table() %}
-        <tr>
+        <tr {% if table.is_line_non_droppable(item) %}class="non_droppable"{% endif %}>
             <td>{{ item.position }}</td>
             <td>{{ item.driver }}</td>
             <td>{{ table.find_detailed_points(item, "QUALIFYING") }}</td>

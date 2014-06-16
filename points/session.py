@@ -324,6 +324,16 @@ class Session():
         self.data[idx]["points"] = points
         return True
 
+    def apply_non_droppable(self, driver_name):
+        idx = self.lookup_driver_row_idx(driver_name)
+
+        # if not found, return right away
+        if idx < 0:
+            return False
+
+        self.data[idx]["non_droppable"] = True
+        return True
+
     def apply_point_adjustments(self):
         if self.already_applied_point_adjustments:
             return
@@ -344,6 +354,10 @@ class Session():
                 if adjustment['type'] == 'adjust_points':
                     points = adjustment['points']
                     self.apply_adjustment_assign_points_to_driver(driver_name, points)
+
+                # for non-droppable events
+                if adjustment['type'] == 'non_droppable':
+                    self.apply_non_droppable(driver_name)
 
                 count_applied += 1
 
@@ -389,7 +403,7 @@ class Session():
 
             # if points were overwritten as a part of post-race adjustments, then assign this exact value
             if "points" in entry:
-                driver.set_points(self, entry["points"], entry["status"])
+                driver.set_points(self, entry["points"], entry["status"], "non_droppable" in entry)
                 continue
 
             # assign points based on the status & position
@@ -397,13 +411,13 @@ class Session():
                 # this is a regular finish
                 points = season_data.get_driver_points(self.stype, position)
                 entry["points"] = points
-                driver.set_points(self, points, entry["status"])
+                driver.set_points(self, points, entry["status"], "non_droppable" in entry)
 
             elif entry["status"] == 'DNS':
                 # DNS is 'did not start'
                 # person gets 0 points always. he stays on the rankings, but it creates a gap in points
                 entry["points"] = 0
-                driver.set_points(self, 0, entry["status"])
+                driver.set_points(self, 0, entry["status"], "non_droppable" in entry)
 
             elif entry["status"] == 'DNF':
                 # DNF is 'did not finish'
@@ -411,13 +425,13 @@ class Session():
                 # i.e. someone who crashed on lap 5 gets less points vs. someone who crashed on lap 6
                 points = season_data.get_driver_points(self.stype, position)
                 entry["points"] = points
-                driver.set_points(self, points, entry["status"])
+                driver.set_points(self, points, entry["status"], "non_droppable" in entry)
 
             elif entry["status"] == 'DQ':
                 # DQ - by default it's zero points
                 # it can be overwritten later by the admin
                 entry["points"] = 0
-                driver.set_points(self, 0, entry["status"])
+                driver.set_points(self, 0, entry["status"], "non_droppable" in entry)
 
             else:
                 # unknown driver status
@@ -541,6 +555,27 @@ class Session():
                 'driver_name': driver_name,
                 'type': 'adjust_points',
                 'points': points
+            }
+        )
+
+    def store_non_droppable_event(self, driver):
+        driver_name, driver_classes = self.get_driver_name_and_classes(driver)
+
+        session_adjustments = self.config.get_db_connection().table('session_adjustments')
+        session_adjustments.remove(
+            (where('season') == self.get_round().year) &
+            (where('round') == self.get_round().num) &
+            (where('session_name') == self.get_name()) &
+            (where('driver_name') == driver_name) &
+            (where('type') == 'non_droppable')
+        )
+        session_adjustments.insert(
+            {
+                'season': self.get_round().year,
+                'round': self.get_round().num,
+                'session_name': self.get_name(),
+                'driver_name': driver_name,
+                'type': 'non_droppable'
             }
         )
 
