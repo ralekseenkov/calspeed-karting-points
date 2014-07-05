@@ -2,7 +2,6 @@ from operator import itemgetter
 
 
 class ResultsTable():
-
     def __init__(self, total_rounds, drop_rounds, rounds_list):
         self.total_rounds = total_rounds
         self.drop_rounds = drop_rounds
@@ -57,6 +56,16 @@ class ResultsTable():
 
     def process(self):
 
+        # figure out the number of active rounds
+        active_rounds = set()
+        for driver in self.lines:
+            for round_obj in driver.get_points():
+                idx = int(round_obj.get_num()) - 1
+                if idx < 0 or idx >= self.total_rounds:
+                    raise IndexError("Invalid round: " + round_obj.get_num())
+                active_rounds.add(idx)
+
+        # process points
         for driver in self.lines:
             # init driver points for each round
             round_points = []
@@ -75,8 +84,6 @@ class ResultsTable():
 
                 # get index of the round
                 idx = int(round_obj.get_num()) - 1
-                if idx < 0 or idx >= self.total_rounds:
-                    raise IndexError("Invalid round: " + round_obj.get_num())
 
                 # iterate over all sessions and accumulate data
                 item = round_points[idx]
@@ -99,8 +106,15 @@ class ResultsTable():
                     item["points"] += points
                     item["detailed_points"].append(detailed_points)
 
+            # we don't want to drop full amount when the total number of rounds is very small
+            drops = self.drop_rounds
+            if len(active_rounds) <= 2:
+                drops = 0
+            elif len(active_rounds) == 3:
+                drops = min(drops, 1)
+
             # drop some amount of worst rounds
-            for drop_round in range(self.drop_rounds):
+            for drop_round in xrange(drops):
                 worst_item = None
                 for item in round_points:
                     # do not drop rounds which are marked as non-droppable

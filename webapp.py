@@ -311,5 +311,4 @@ def main_page():
 
 
 if __name__ == "__main__":
-    # TODO: move to config
-    app.run(host="0.0.0.0", port=4567, threaded=True)
+    app.run(threaded=True)
