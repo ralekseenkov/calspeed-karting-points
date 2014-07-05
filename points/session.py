@@ -173,7 +173,7 @@ class Session():
                     entry["laps_completed"] = "0"
 
                 if entry["gap_to_leader"] is None:
-                    entry["gap_to_leader"] = entry["pos"]
+                    entry["gap_to_leader"] = ""
                 else:
                     # to workaround differences between "1 Lap" and "1 lap"
                     entry["gap_to_leader"] = entry["gap_to_leader"].upper()
