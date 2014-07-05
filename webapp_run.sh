@@ -1,6 +1,26 @@
 #!/bin/bash
-source env/bin/activate
+
+VENV_NAME='env'
+TINYDB_DIR='.db/tinydb'
+WEBAPP_SETTINGS='conf/webapp.default.conf'
+
+# Create virtual env if it doesn't exist
+if [ ! -d "$VENV_NAME" ]; then
+  virtualenv $VENV_NAME
+fi
+
+# Create database directory if it doesn't exist
+if [ ! -d "$TINYDB_DIR" ]; then
+  mkdir -p $TINYDB_DIR
+fi
+
+# Activate virtual env
+source $VENV_NAME/bin/activate
+
+# Install dependencies
 pip -q install -r requirements.txt
-export WEBAPP_SETTINGS=conf/webapp.default.conf
+
+# Run webapp
+export WEBAPP_SETTINGS
 python webapp.py
 
