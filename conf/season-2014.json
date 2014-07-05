@@ -30,26 +30,126 @@
         },
 
         "driver_teams": {
-            "NightShift Racing 1": [
-                "Sergio Bravo",
-                "Victor Pineros",
-                "Alex Gutierrez"
+            "RANDOM MANUFACTURING 1": [
+                "Darren Mercer",
+                "Brad Packard",
+                "Kyle Meyer"
             ],
-            "NightShift Racing 2": [
-                "Kirk Feldcamp",
+            "RANDOM MANUFACTURING 2": [
+                "David Irish",
+                "Jon Kimbrell",
+                "Moises Lizama"
+            ],
+            "O-2 RACING": [
+                "Ariel Rubio",
+                "Hasller Ortega",
+                "Patrick O'Keefe"
+            ],
+            "T4 TYRRELL": [
+                "Andrew Brown",
+                "Caylee Burgan",
+                "Taylor Hays"
+            ],
+            "T4 EAGLE": [
+                "Chris Carter",
+                "Jeff Carson",
+                "Patrick Britain"
+            ],
+            "T4 SHADOW": [
+                "Chris Huerta",
+                "Greg Reinhardt",
+                "Steve Spring"
+            ],
+            "T4 HESKETH": [
+                "Aaron Scott",
+                "David Kelmenson",
+                "Tom Zevin"
+            ],
+            "T4 ONYX": [
+                "Cameron Rose",
+                "Ian Enz",
+                "Vince Burke"
+            ],
+            "NORCAL 1": [
+                "Jerott King",
+                "Keith LaFaver",
+                "Wes Dent"
+            ],
+            "ARKHAM 1": [
+                "Jason Collins",
+                "Jonathan Vitolo",
+                "Justin Tolman"
+            ],
+            "ARKHAM 2": [
+                "Michael Wojdat",
+                "Riley Dugan",
+                "Rodney Bryant"
+            ],
+            "ARKHAM 3": [
+                "Ashley Arnott",
+                "Bruce Allen",
+                "Charles Eichlin"
+            ],
+            "ALL-IN RACING": [
+                "Duane Lawson",
+                "Kelly Bastian",
+                "Mark Connell"
+            ],
+            "HUBCAPMIKE.COM": [
+                "Dennis Kimbrell",
+                "Mitch Collins",
+                "Brian Starr"
+            ],
+            "RNA MOTORSPORTS": [
+                "Adam Nagao",
+                "Rene Hourian",
+                "Nick Marascio"
+            ],
+            "SENIOR MOMENTS RACING": [
+                "Gerry Florez",
+                "Hugh Robertson",
+                "Steve Nakajima"
+            ],
+            "JBL RACING": [
+                "Steve Jasinski",
+                "Jeff Latimer",
+                "Ben Blank"
+            ],
+            "PINK LACES RACING": [
+                "Andrew Lemons",
+                "Derek Esquibel",
+                "Lucian Millar"
+            ],
+            "S3 / GRANSTAND 1": [
+                "Sergio Bravo",
+                "Alex Gutierrez",
+                "Victor Pineiros"
+            ],
+            "S3 / GRANSTAND 2": [
+                "Kirk Feldkamp",
                 "Sarah Bantay",
                 "Jake Hood"
             ],                
-            "NightShift Racing 3": [
+            "S3 / GRANSTAND 3": [
                 "Bill Kreig",
                 "Ben Marquart",
                 "Roman Alekseenkov"
             ],                
-            "NightShift Racing 4": [
-                "Jose Silva",
+            "S3 / GRANSTAND 4": [
+                "Jose da Silva",
                 "Rene Moreno",
                 "Nathan Hood"
-            ]               
+            ],
+            "NORCAL'S FINEST": [
+                "Alex Herndon",
+                "Paige Kaufman",
+                "Daniel de la Calle"
+            ],
+            "RISING STARS": [
+                "Aaron Downs",
+                "Daniel Downey",
+                "Jeremy Aldridge"
+            ]
         },
 
         "QUALIFYING": {

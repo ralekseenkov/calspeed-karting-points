@@ -2,6 +2,7 @@ from operator import itemgetter
 
 
 class ResultsTable():
+
     def __init__(self, total_rounds, drop_rounds, rounds_list):
         self.total_rounds = total_rounds
         self.drop_rounds = drop_rounds
@@ -122,7 +123,7 @@ class ResultsTable():
                 "driver": driver.get_name(),
                 "rounds": round_points,
                 "dropped_points": dropped_points,
-                "total_points": total_points,
+                "total_points": total_points
             }
 
             self.table.append(table_line)

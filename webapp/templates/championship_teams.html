@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="row">
+    <p><a class="btn btn-primary" href="{{ url_for('season_overview', selected_season=selected_season) }}"
+          role="button">&laquo; Back to home page</a></p>
+</div>
+
+<div class="row">
+    <h1>CalSpeed Super Series {{ selected_season }}: Team Championship</h1>
+</div>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>Position</th>
+        <th class="col-md-2">Team name</th>
+        <th class="col-md-2">Driver name</th>
+        {% for round in range(season_data.get_total_rounds()) %}
+        <th>{{ round+1 }}</th>
+        {% endfor %}
+        <th>Drops (Dr)</th>
+        <th>Total (Dr)</th>
+        <th>Drops (Team)</th>
+        <th>Total (Team)</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for team_item in table.get_table() %}
+        {% set rowloop = loop %}
+        {% for driver_row in team_item.driver_rows %}
+            <tr {% if rowloop.index0 % 2 == 0 %}class="row-striped-odd"{% endif %}>
+            {% if loop.index0 == 0 %}
+                <td rowspan="{{ team_item.driver_rows|length }}">{{ team_item.position }}</td>
+                <td rowspan="{{ team_item.driver_rows|length }}">{{ team_item.team }}</td>
+            {% endif %}
+
+            <td>{{ driver_row.driver }}</td>
+            {% for item in driver_row.rounds %}
+            {% if item.dropped %}
+            <td class="dropped_points">{{ item.points }}</td>
+            {% elif item.non_droppable %}
+            <td class="non_droppable">{{ item.points }}</td>
+            {% elif item.exists %}
+            <td>{{ item.points }}</td>
+            {% else %}
+            <td>-</td>
+            {% endif %}
+            {% endfor %}
+            <td>{{ driver_row.dropped_points }}</td>
+            <td>{{ driver_row.total_points }}</td>
+
+            {% if loop.index0 == 0 %}
+            <td rowspan="{{ team_item.driver_rows|length }}">{{ team_item.dropped_points }}</td>
+            <td rowspan="{{ team_item.driver_rows|length }}">{{ team_item.total_points }}</td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    {% endfor %}
+    </tbody>
+
+</table>
+
+{% endblock %}
+

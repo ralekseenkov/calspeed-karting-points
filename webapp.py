@@ -64,7 +64,7 @@ def admin_season(selected_season):
         abort(404, "Season data not found")
     season_data = config.get_season_data(selected_season)
 
-    # Uncomment this to recalculate points all the time
+    # Uncomment this to recalculate points every the time admin page is accessed
     # season_data.calc_and_store_points()
 
     # Find similar drivers
@@ -190,7 +190,6 @@ def admin_session_points(selected_season, selected_round, session_name=None):
 
     # Clear all adjustments
     if 'action' in request.form and request.form['action'] == 'clear_driver_adjustments':
-
         driver_name = request.form['driver_name']
         session_obj.clear_adjustments_for_driver(driver_name)
         season_data.calc_and_store_points()
@@ -280,7 +279,14 @@ def championship_table(selected_season, driver_class):
 
     # Get results table
     table = season_data.get_results_for_class(dclass)
-    return render_template("championship.html", selected_season=selected_season, season_data=season_data, table=table,
+
+    # Separate templates for driver and team standings
+    if dclass == 'TEAMS':
+        template_name = "championship_teams.html"
+    else:
+        template_name = "championship.html"
+
+    return render_template(template_name, selected_season=selected_season, season_data=season_data, table=table,
                            dclass=dclass)
 
 
