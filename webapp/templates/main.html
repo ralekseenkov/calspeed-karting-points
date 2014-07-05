@@ -21,9 +21,9 @@
         <div class="row">
             {% for dclass, dclass_data in season_data.get_driver_classes().iteritems() %}
             <div class="col-6 col-sm-6 col-lg-4">
-                <h2>{{ dclass_data["name"] }}</h2>
+                <h2>{{ dclass_data.name }}</h2>
 
-                <p>{{ dclass_data["description"] }}</p>
+                <p>{{ dclass_data.description }}</p>
 
                 <p><a class="btn btn-primary"
                       href="{{ url_for('championship_table', selected_season=selected_season, driver_class="championship_" + dclass) }}" role="button">Results &raquo;</a></p>

@@ -90,8 +90,8 @@
                     <tbody>
                         {% for e in driver_name_corrections %}
                             <tr>
-                                <td>{{ e["name_incorrect"] }}</td>
-                                <td>{{ e["name_correct"] }}</td>
+                                <td>{{ e.name_incorrect }}</td>
+                                <td>{{ e.name_correct }}</td>
                                 <td class="text-center">
                                     <button type="button" class="button-delete-driver-name-correction" data-toggle="tooltip" data-placement="right" title="Delete correction">
                                         <span class="glyphicon glyphicon-trash"></span>
@@ -124,9 +124,9 @@
                     <tbody>
                         {% for e in similar_drivers %}
                             <tr>
-                                <td>{{ e["name1"] }}</td>
-                                <td>{{ e["name2"] }}</td>
-                                <td class="text-center">{{ e["distance"] }}</td>
+                                <td>{{ e.name1 }}</td>
+                                <td>{{ e.name2 }}</td>
+                                <td class="text-center">{{ e.distance }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

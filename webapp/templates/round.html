@@ -33,7 +33,7 @@
             <td>{{ table.find_detailed_points(item, "HEAT", "1") }}</td>
             <td>{{ table.find_detailed_points(item, "HEAT", "2") }}</td>
             <td>{{ table.find_detailed_points(item, "MAIN") }}</td>
-            <td><b>{{ item["current_round"]["points"] }}</b></td>
+            <td><b>{{ item.current_round.points }}</b></td>
         </tr>
     {% endfor %}
     </tbody>
