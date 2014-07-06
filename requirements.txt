@@ -4,3 +4,6 @@ flask-security
 requests
 tinydb
 python-Levenshtein
+bcrypt
+argparse
+

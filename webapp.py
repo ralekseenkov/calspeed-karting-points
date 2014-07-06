@@ -2,7 +2,7 @@ from operator import itemgetter
 import re
 from flask import Flask, request, render_template, redirect, url_for, abort, flash, jsonify
 # noinspection PyUnresolvedReferences
-from flask.ext.login import LoginManager, login_user
+from flask.ext.login import LoginManager, login_user, logout_user, current_user
 # noinspection PyUnresolvedReferences
 from flask.ext.security import login_required
 from points.config import Config
@@ -24,7 +24,7 @@ config = Config()
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.load_by_id(user_id)
+    return User.load_by_id(user_id, config)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -38,7 +38,7 @@ def login():
     password = request.form['password']
 
     # validate credentials and load user
-    user_obj = User.load_by_username_password(username=username, password=password)
+    user_obj = User.load_by_username_password(username, password, config)
     if user_obj is None:
         flash('Username or Password is invalid', 'error')
         return redirect(url_for('login'))
@@ -46,7 +46,14 @@ def login():
     # log in user
     login_user(user_obj)
     flash('Logged in successfully')
-    return redirect(request.args.get('next') or url_for('admin'))
+    return redirect(url_for('admin'))
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
 
 
 @app.route('/admin')
