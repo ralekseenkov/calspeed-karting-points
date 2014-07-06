@@ -138,6 +138,33 @@
             </div>
         </div>
 
+        <div class="row">
+            <div class="col-6 col-sm-6 col-lg-12">
+                <h2>Actions</h2>
+
+                    <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>This will force recalculation of points for the season. Normally you don't need to do this</td>
+                            <td>
+                                <button type="button" class="btn btn-primary button-recalculate-points" data-toggle="tooltip" data-placement="right" title="Recalculate points for the season">
+                                    Recalculate points
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+
     </div>
 
     <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="sidebar" role="navigation">
@@ -155,6 +182,30 @@
 
 <script>
     $("[data-toggle=tooltip]").tooltip({delay: { show: 250, hide: 100 }});
+
+    $(function(){
+        $('.button-recalculate-points').on('click', function(e){
+            e.preventDefault(); // preventing default click action
+
+            var action_cell = $(this).parent().parent().children()[1];
+
+            // trying to initiate the download
+            action_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Recalculating points...</div></div>';
+
+            $.ajax({
+                type: 'post',
+                url: '{{ url_for('admin_season', selected_season=selected_season) }}',
+                data: { action: 'recalculate_points' },
+                success: function() {
+                    location.reload();
+                },
+                error: function(){
+                    action_cell.innerHTML = '<span class="label label-danger">Failed to recalculate points</span>';
+                }
+            })
+
+        })
+    })
 
     $(function(){
         $('.button-enter-round-url').on('click', function(e){

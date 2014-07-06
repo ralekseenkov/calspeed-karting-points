@@ -62,7 +62,7 @@ def admin():
     return redirect(url_for("admin_season", selected_season=config.get_current_season_year()))
 
 
-@app.route('/admin_season/<int:selected_season>')
+@app.route('/admin_season/<int:selected_season>', methods=['GET', 'POST'])
 @login_required
 def admin_season(selected_season):
     # Get and validate season
@@ -71,10 +71,12 @@ def admin_season(selected_season):
         abort(404, "Season data not found")
     season_data = config.get_season_data(selected_season)
 
-    # Uncomment this to recalculate points every the time admin page is accessed
-    # season_data.calc_and_store_points()
+    # Do we need to recalculate points?
+    if 'action' in request.form and request.form['action'] == 'recalculate_points':
+        season_data.calc_and_store_points()
+        return jsonify()
 
-    # Find similar drivers
+    # Otherwise, just display the season page. Find similar drivers in real-time, before we do this
     results_table = season_data.get_results_for_class()
     d = sorted([row["driver"] for row in results_table.table])
 
