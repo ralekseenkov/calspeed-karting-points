@@ -140,20 +140,61 @@
 
         <div class="row">
             <div class="col-6 col-sm-6 col-lg-12">
+                <h2>Summary of point adjustments</h2>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Round</th>
+                            <th class="col-md-2">Session</th>
+                            <th class="col-md-2">Driver</th>
+                            <th>Adjustment</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for adjustment in season_data.load_point_adjustments_flat() %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ adjustment.round }}</td>
+                            <td>{{ adjustment.session_name }}</td>
+                            <td>{{ adjustment.driver_name }}</td>
+                            <td>
+                                {% if adjustment.type == 'adjust_points' %}
+                                    Set points for the session to {{ adjustment.points }}
+                                {% elif adjustment.type == 'adjust_position' %}
+                                    Move {% if adjustment.positions < 0 %}up{% else %}down{% endif %} by {{ adjustment.positions|abs }} position(s)
+                                {% else %}
+                                    Non-droppable round
+                                {% endif %}
+                            </td>
+                            <td>{% if adjustment.reason %}{{ adjustment.reason }}{% else %}-{% endif %}</td>
+                        </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6 col-sm-6 col-lg-12">
                 <h2>Actions</h2>
 
                     <table class="table">
                     <thead>
                         <tr>
                             <th>Description</th>
-                            <th>Action</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
 
                     <tbody>
                         <tr>
                             <td>This will force recalculation of points for the season. Normally you don't need to do this</td>
-                            <td>
+                            <td class="text-center">
                                 <button type="button" class="btn btn-primary button-recalculate-points" data-toggle="tooltip" data-placement="right" title="Recalculate points for the season">
                                     Recalculate points
                                 </button>

@@ -514,7 +514,7 @@ class Session():
 
         return result
 
-    def store_adjustment_of_driver_position(self, driver, positions):
+    def store_adjustment_of_driver_position(self, driver, positions, reason):
         driver_name, driver_classes = self.get_driver_name_and_classes(driver)
 
         session_adjustments = self.config.get_db_connection().table('session_adjustments')
@@ -532,11 +532,12 @@ class Session():
                 'session_name': self.get_name(),
                 'driver_name': driver_name,
                 'type': 'adjust_position',
-                'positions': positions
+                'positions': positions,
+                'reason': reason
             }
         )
 
-    def store_adjustment_of_driver_points(self, driver, points):
+    def store_adjustment_of_driver_points(self, driver, points, reason):
         driver_name, driver_classes = self.get_driver_name_and_classes(driver)
 
         session_adjustments = self.config.get_db_connection().table('session_adjustments')
@@ -554,11 +555,12 @@ class Session():
                 'session_name': self.get_name(),
                 'driver_name': driver_name,
                 'type': 'adjust_points',
-                'points': points
+                'points': points,
+                'reason': reason
             }
         )
 
-    def store_non_droppable_event(self, driver):
+    def store_non_droppable_event(self, driver, reason):
         driver_name, driver_classes = self.get_driver_name_and_classes(driver)
 
         session_adjustments = self.config.get_db_connection().table('session_adjustments')
@@ -575,7 +577,8 @@ class Session():
                 'round': self.get_round().num,
                 'session_name': self.get_name(),
                 'driver_name': driver_name,
-                'type': 'non_droppable'
+                'type': 'non_droppable',
+                'reason': reason
             }
         )
 

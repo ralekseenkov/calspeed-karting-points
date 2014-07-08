@@ -1,9 +1,11 @@
 import json
 import os
 
+from operator import itemgetter
 from results_table import ResultsTable
 from results_table_team import ResultsTableTeam
 from round import Round
+from tinydb import where
 
 
 class SeasonData():
@@ -51,6 +53,26 @@ class SeasonData():
     def get_directory(self):
         return self.config.get_results_directory() + "/" + str(self.year)
 
+    def count_approved_sessions(self):
+        session_data_table = self.config.get_db_connection().table('session_data')
+        results = session_data_table.search(
+            (where('season') == self.year)
+        )
+        if not results:
+            return 0
+        return len(results)
+
+    def count_total_sessions(self):
+        rounds = self.get_rounds_list()
+        result = 0
+        for r in rounds:
+            if r.exists():
+                result += r.count_total_sessions()
+        return result
+
+    def is_approved(self):
+        return self.count_approved_sessions() >= self.count_total_sessions()
+
     def get_results_for_class(self, dclass=None):
         # Filter out drivers which belong to this class
         result = ResultsTable(self.get_total_rounds(), self.get_grop_rounds(), self.get_rounds_list())
@@ -67,6 +89,27 @@ class SeasonData():
         # Read it
         if os.path.isfile(fname):
             result.set_table(json.load(open(fname)))
+        return result
+
+    def load_point_adjustments_flat(self):
+        session_adjustments = self.config.get_db_connection().table('session_adjustments')
+        list_of_adjustments = session_adjustments.search(
+            (where('season') == self.year)
+        )
+        list_of_adjustments = sorted(list_of_adjustments, key=itemgetter("round", "session_name", "driver_name"))
+        return list_of_adjustments
+
+    def load_point_adjustments(self):
+        session_adjustments = self.config.get_db_connection().table('session_adjustments')
+        list_of_adjustments = session_adjustments.search(
+            (where('season') == self.year)
+        )
+        result = {}
+        for item in list_of_adjustments:
+            if not item['driver_name'] in result:
+                result[item['driver_name']] = []
+            result[item['driver_name']].append(item)
+
         return result
 
     def calc_and_store_points(self):

@@ -352,3 +352,16 @@ class Round():
     def is_approved(self):
         return self.count_approved_sessions() >= self.count_total_sessions()
 
+    def load_point_adjustments(self):
+        session_adjustments = self.config.get_db_connection().table('session_adjustments')
+        list_of_adjustments = session_adjustments.search(
+            (where('season') == self.year) &
+            (where('round') == self.num)
+        )
+        result = {}
+        for item in list_of_adjustments:
+            if not item['driver_name'] in result:
+                result[item['driver_name']] = []
+            result[item['driver_name']].append(item)
+
+        return result

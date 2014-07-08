@@ -169,11 +169,12 @@ def admin_session_points(selected_season, selected_round, session_name=None):
     if 'action' in request.form and request.form['action'] == 'adjust_driver_position':
         driver_name = request.form['driver_name']
         move_type = request.form['move_type']
+        reason = request.form['reason']
         positions = int(request.form['positions'])
         if move_type == 'up':
             positions = -positions
 
-        session_obj.store_adjustment_of_driver_position(driver_name, positions)
+        session_obj.store_adjustment_of_driver_position(driver_name, positions, reason)
         season_data.calc_and_store_points()
 
         return jsonify()
@@ -181,9 +182,10 @@ def admin_session_points(selected_season, selected_round, session_name=None):
     # Update driver points
     if 'action' in request.form and request.form['action'] == 'adjust_driver_points':
         driver_name = request.form['driver_name']
+        reason = request.form['reason']
         points = int(request.form['points'])
 
-        session_obj.store_adjustment_of_driver_points(driver_name, points)
+        session_obj.store_adjustment_of_driver_points(driver_name, points, reason)
         season_data.calc_and_store_points()
 
         return jsonify()
@@ -191,8 +193,9 @@ def admin_session_points(selected_season, selected_round, session_name=None):
     # Mark event as non-droppable
     if 'action' in request.form and request.form['action'] == 'mark_non_droppable':
         driver_name = request.form['driver_name']
+        reason = request.form['reason']
 
-        session_obj.store_non_droppable_event(driver_name)
+        session_obj.store_non_droppable_event(driver_name, reason)
         season_data.calc_and_store_points()
 
         return jsonify()
@@ -307,11 +310,13 @@ def round_table(selected_season, selected_round):
         abort(404, "Season data not found")
     season_data = config.get_season_data(selected_season)
 
+    round_obj = Round(config, selected_season, selected_round)
+
     table = season_data.get_results_for_class()
     table.strip_to_round(selected_round)
 
     return render_template("round.html", seasons=seasons, selected_season=selected_season,
-                           selected_round=selected_round, season_data=season_data, table=table)
+                           selected_round=selected_round, season_data=season_data, round_obj=round_obj, table=table)
 
 
 @app.route('/')
