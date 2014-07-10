@@ -6,4 +6,4 @@ tinydb
 python-Levenshtein
 bcrypt
 argparse
-
+ujson

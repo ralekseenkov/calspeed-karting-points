@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import os
 
 from operator import itemgetter
@@ -10,16 +10,19 @@ from tinydb import where
 
 class SeasonData():
     def __init__(self, data, config, year):
+        # Store season parameters
         self.data = data
         self.config = config
         self.year = year
 
-    def get_rounds_list(self):
-        rounds = []
+        # Precreate the list of rounds
+        self.rounds_list = []
         for round_num in xrange(self.get_total_rounds()):
             round_obj = Round(self.config, self.year, round_num + 1)
-            rounds.append(round_obj)
-        return rounds
+            self.rounds_list.append(round_obj)
+
+    def get_rounds_list(self):
+        return self.rounds_list
 
     def get_rounds_completed(self):
         completed = 0
@@ -157,7 +160,7 @@ class SeasonData():
             # Store the table
             print "  [x] Saving results to '%s'" % fname
             with open(fname, "wb") as json_file:
-                json.dump(table.get_table(), json_file, indent=4)
+                json.dump(table.get_table(), json_file)
 
         # Calculate and store results for teams
         table_team = ResultsTableTeam(standings, self.get_driver_teams())
@@ -168,6 +171,6 @@ class SeasonData():
         # Store the table
         print "  [x] Saving results to '%s'" % fname
         with open(fname, "wb") as json_file:
-            json.dump(table_team.get_table(), json_file, indent=4)
+            json.dump(table_team.get_table(), json_file)
 
         print "Points calculated, total number of drivers: %d" % len(drivers)

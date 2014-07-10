@@ -1,4 +1,4 @@
-import json
+import ujson as json
 import requests
 import os
 import re
@@ -118,7 +118,7 @@ class Session():
 
         # store the json
         with open(dirname + "/" + self.get_name() + ".json", "w") as outfile:
-            json.dump(self.data, outfile, indent=4)
+            json.dump(self.data, outfile)
 
         # print name of the event
         print "  [x] Downloaded '%s': %s" % (self.get_name(), self.get_url(mylaps_id))
@@ -454,7 +454,7 @@ class Session():
         # store the table
         print "  [x] Saving results to '%s'" % fname
         with open(fname, "wb") as json_file:
-            json.dump(self.data, json_file, indent=4)
+            json.dump(self.data, json_file)
 
     def load_points(self):
 

@@ -69,7 +69,7 @@ class ResultsTable():
         for driver in self.lines:
             # init driver points for each round
             round_points = []
-            for round_num in range(self.total_rounds):
+            for round_num in xrange(self.total_rounds):
                 round_points.append(
                     {
                         "round": round_num + 1,

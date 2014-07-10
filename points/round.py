@@ -1,5 +1,5 @@
 import requests
-import json
+import ujson as json
 import os
 import re
 from operator import methodcaller
@@ -17,6 +17,7 @@ class Round():
         self.sessions_by_type = {}
         self.qualifier = None
         self.main_merged = None
+        self.cache = {}
 
     def get_num(self):
         return self.num
@@ -111,13 +112,22 @@ class Round():
         self.sessions_by_type[stype].append(session_obj)
 
     def exists(self):
+        # have we calculated the value already? return
+        if "exists" in self.cache:
+            return self.cache["exists"]
+
+        # this is expensive to do, so this will be calculated and cached later
         dirname = self.get_directory()
         if not isdir(dirname):
             return False
         if self.get_mylaps_id() is None:
             return False
         jsonfiles = [f for f in listdir(dirname) if isfile(join(dirname, f)) and f.upper().endswith('.JSON')]
-        return len(jsonfiles) > 0
+        result = len(jsonfiles) > 0
+
+        # store the result
+        self.cache["exists"] = result
+        return result
 
     def read(self):
 
@@ -181,7 +191,7 @@ class Round():
 
         # store the json
         with open(dirname + "/round.json", "w") as outfile:
-            json.dump(data, outfile, indent=4)
+            json.dump(data, outfile)
 
         # iterate over available sessions
         for group in data["groups"]:
@@ -279,7 +289,6 @@ class Round():
                 self.load_points_session("HEAT", heatNum + heatLetter)
 
         self.load_points_session("MAIN")
-
 
     @staticmethod
     def generate_session_keys():

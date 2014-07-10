@@ -1,4 +1,4 @@
-import json
+import ujson as json
 from season_data import SeasonData
 from tinydb import TinyDB, where
 from tinydb.storages import JSONStorage
