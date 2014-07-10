@@ -231,7 +231,7 @@
             var action_cell = $(this).parent().parent().children()[1];
 
             // trying to initiate the download
-            action_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Recalculating points...</div></div>';
+            action_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Recalculating points...</div></div>';
 
             $.ajax({
                 type: 'post',
@@ -258,7 +258,7 @@
             bootbox.prompt("MyLaps URL for Round " + selected_round, function(result) {
                 if (result !== null) {
                     // trying to initiate the download
-                    url_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Downloading...</div></div>';
+                    url_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Downloading...</div></div>';
 
                     $.ajax({
                         type: 'post',
@@ -288,7 +288,7 @@
             bootbox.confirm("Are you sure you want to delete data for round " + selected_round, function(result) {
                 if (result) {
                     // trying to start deletion
-                    url_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Deleting...</div></div>';
+                    url_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Deleting...</div></div>';
 
                     $.ajax({
                         type: 'post',
@@ -362,7 +362,7 @@
             bootbox.confirm("Are you sure you want to delete driver name correction <b>" + name_incorrect + "</b> to <b>" + name_correct + "</b>", function(result) {
                 if (result) {
                     // trying to start deletion
-                    action_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Deleting...</div></div>';
+                    action_cell.innerHTML = '<div class="progress progress-striped active"><div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">Deleting...</div></div>';
 
                     $.ajax({
                         type: 'post',
