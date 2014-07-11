@@ -327,9 +327,23 @@ class Session():
     def apply_non_droppable(self, driver_name):
         idx = self.lookup_driver_row_idx(driver_name)
 
-        # if not found, return right away
+        # if not found, force addition of entry to the list (likely, the driver has been suspended)
         if idx < 0:
-            return False
+            # entry needs to be added, otherwise it won't count as non-droppable
+            driver_name_canonical, driver_classes = self.get_driver_name_and_classes(driver_name)
+            entry = {
+                "pos": int(self.data[-1]["pos"]) + 1,
+                "driver_name": driver_name,
+                "driver_name_canonical": driver_name_canonical,
+                "status": 'DNS',
+                "kart": 'N/A',
+                "best_lap_time": 'N/A',
+                "best_lap_number": "N/A",
+                "laps_completed": "0",
+                "gap_to_leader": ""
+            }
+            self.data.append(entry)
+            idx = self.lookup_driver_row_idx(driver_name)
 
         self.data[idx]["non_droppable"] = True
         return True
