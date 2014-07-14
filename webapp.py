@@ -1,6 +1,8 @@
 from operator import itemgetter
+
 import re
 from flask import Flask, request, render_template, redirect, url_for, abort, flash, jsonify
+
 # noinspection PyUnresolvedReferences
 from flask.ext.login import LoginManager, login_user, logout_user, current_user
 # noinspection PyUnresolvedReferences
@@ -11,14 +13,16 @@ from points.session import Session
 from webapp.auth import User
 from Levenshtein import distance
 
-
+# create web application
 app = Flask(__name__, static_folder='webapp/static', template_folder='webapp/templates')
 app.config.from_envvar('WEBAPP_SETTINGS')
 
+# initialize authentication hooks
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+# read configuration files
 config = Config()
 
 
@@ -325,4 +329,4 @@ def main_page():
 
 
 if __name__ == "__main__":
-    app.run(host = '0.0.0.0', threaded=True)
+    app.run(host='0.0.0.0', port=4567, threaded=True)
