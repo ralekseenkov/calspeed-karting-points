@@ -20,7 +20,7 @@
 
         <div class="row">
             {% for dclass, dclass_data in season_data.get_driver_classes().iteritems() %}
-            <div class="col-6 col-sm-6 col-lg-4">
+            <div class="col-6 col-sm-6 col-lg-4 menu-item">
                 <h2>{{ dclass_data.name }}</h2>
 
                 <p>{{ dclass_data.description }}</p>
@@ -43,7 +43,7 @@
         </div>
 
         <div class="row">
-            <div class="col-6 col-sm-6 col-lg-12">
+            <div class="col-xs-12">
                 <h2>Individual rounds</h2>
 
                 <p>You can click on each individual round to see the points for qualifier, heats, and mains. </p>
