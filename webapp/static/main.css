@@ -19,3 +19,11 @@
 .menu-item {
   min-height: 157px;
 }
+
+.glyphicon-chevron-up {
+  color: #279100;
+}
+
+.glyphicon-chevron-down {
+  color: #FC5421;
+}

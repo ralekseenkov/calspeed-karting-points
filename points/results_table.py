@@ -6,11 +6,13 @@ class ResultsTable():
         self.total_rounds = total_rounds
         self.drop_rounds = drop_rounds
         self.rounds_list = rounds_list
-        self.lines = []
+        self.drivers = []
         self.table = []
+        self.ignore_last_round = False
+        self.driver_prev_position_map = {}
 
-    def add_line(self, line):
-        self.lines.append(line)
+    def use_drivers(self, drivers):
+        self.drivers = drivers
 
     def get_table(self):
         return self.table
@@ -54,19 +56,42 @@ class ResultsTable():
                 return True
         return False
 
+    def set_ignore_last_round(self):
+        self.ignore_last_round = True
+
+    def get_driver_position_map(self):
+        result = {}
+        for line in self.table:
+            result[line["driver"]] = line["position"]
+        return result
+
+    def set_driver_prev_position_map(self, position_map):
+        self.driver_prev_position_map = position_map
+
     def process(self):
 
         # figure out the number of active rounds
         active_rounds = set()
-        for driver in self.lines:
+        for driver in self.drivers:
             for round_obj in driver.get_points():
-                idx = int(round_obj.get_num()) - 1
-                if idx < 0 or idx >= self.total_rounds:
-                    raise IndexError("Invalid round: " + round_obj.get_num())
-                active_rounds.add(idx)
+                if round_obj.exists():
+                    idx = int(round_obj.get_num()) - 1
+                    if idx < 0 or idx >= self.total_rounds:
+                        raise IndexError("Invalid round: " + round_obj.get_num())
+                    active_rounds.add(idx)
+
+        # if we need to ignore last round, figure out which round is the last and drop it
+        if self.ignore_last_round:
+            last_round = None
+            for r in self.rounds_list:
+                if r.exists():
+                    if last_round is None or r.get_date() > last_round.get_date():
+                        last_round = r
+            if last_round is not None:
+                active_rounds.remove(int(last_round.get_num()) - 1)
 
         # process points
-        for driver in self.lines:
+        for driver in self.drivers:
             # init driver points for each round
             round_points = []
             for round_num in xrange(self.total_rounds):
@@ -75,7 +100,7 @@ class ResultsTable():
                         "round": round_num + 1,
                         "points": 0,
                         "dropped": False,
-                        "exists": self.rounds_list[round_num].exists()
+                        "exists": round_num in active_rounds
                     }
                 )
 
@@ -84,6 +109,10 @@ class ResultsTable():
 
                 # get index of the round
                 idx = int(round_obj.get_num()) - 1
+
+                # skip, if it's not an active round
+                if not idx in active_rounds:
+                    continue
 
                 # iterate over all sessions and accumulate data
                 item = round_points[idx]
@@ -155,3 +184,11 @@ class ResultsTable():
                 line["position"] = line_prev["position"]
             line_prev = line
             position += 1
+
+        # look up position of each driver before the round and see how it got changed
+        for line in self.table:
+            if line["driver"] in self.driver_prev_position_map:
+                pos_prev = self.driver_prev_position_map[line["driver"]]
+                line["position_change"] = line["position"] - pos_prev
+            else:
+                line["position_change"] = ""

@@ -18,20 +18,24 @@
 <table class="table table-striped">
     <thead>
     <tr>
-        <th>Position</th>
+        <th>Pos</th>
+        <th>+/-</th>
         <th>Driver name</th>
         {% for round in range(season_data.get_total_rounds()) %}
         <th>{{ round+1 }}</th>
         {% endfor %}
         <th>Drops</th>
         <th>Total</th>
+        <th>Diff</th>
     </tr>
     </thead>
 
     <tbody>
+
     {% for item in table.get_table() %}
     <tr>
         <td>{{ item.position }}</td>
+        <td>{% if item.position_change > 0 %}{{ item.position_change }} <span class="glyphicon glyphicon-chevron-down"></span>{% elif item.position_change < 0 %}{{ item.position_change|abs }} <span class="glyphicon glyphicon-chevron-up"></span>{% else %}{{ item.position_change }}{% endif %}</td>
         <td>{{ item.driver }}</td>
         {% for item in item.rounds %}
         {% if item.dropped %}
@@ -46,6 +50,7 @@
         {% endfor %}
         <td>{{ item.dropped_points }}</td>
         <td>{{ item.total_points }}</td>
+        <td>{% if first_place_points %}{{ item.total_points - first_place_points }}{% else %}{% set first_place_points = item.total_points %}{% endif %}</td>
     </tr>
     {% endfor %}
     </tbody>

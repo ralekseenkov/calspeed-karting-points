@@ -15,7 +15,7 @@ class SeasonData():
         self.config = config
         self.year = year
 
-        # Precreate the list of rounds
+        # Pre-create the list of rounds
         self.rounds_list = []
         for round_num in xrange(self.get_total_rounds()):
             round_obj = Round(self.config, self.year, round_num + 1)
@@ -77,13 +77,13 @@ class SeasonData():
         return self.count_approved_sessions() >= self.count_total_sessions()
 
     def get_results_for_class(self, dclass=None):
-        # Filter out drivers which belong to this class
+        # Create table with results
         result = ResultsTable(self.get_total_rounds(), self.get_grop_rounds(), self.get_rounds_list())
 
-        # determine the directory
+        # Determine the directory
         dirname = self.get_directory()
 
-        # determine the file
+        # Determine the file
         fname = dirname + "/CLASS"
         if dclass:
             fname += "-" + dclass
@@ -92,6 +92,7 @@ class SeasonData():
         # Read it
         if os.path.isfile(fname):
             result.set_table(json.load(open(fname)))
+
         return result
 
     def load_point_adjustments_flat(self):
@@ -116,35 +117,38 @@ class SeasonData():
         return result
 
     def calc_and_store_points(self):
-        # Read all rounds from JSON files
-        rounds_json = []
-        for round_num in xrange(self.get_total_rounds()):
-            round_obj = Round(self.config, self.year, round_num + 1)
-            if round_obj.exists():
-                print "Reading round #%s: %s" % (round_num + 1, round_obj.get_directory())
-                round_obj.read()
-                rounds_json.append(round_obj)
-
-        # Process and store driver points for each individual round
+        # Read all rounds, calculate points for each, store standings
         drivers = {}
-        for round_obj in rounds_json:
-            print "Processing round: %s" % round_obj.get_directory()
-            round_obj.calc_points(drivers, self)
-            round_obj.store_points()
+        for round_obj in self.get_rounds_list():
+            if round_obj.exists():
+                print "Processing round #%s: %s" % (round_obj.get_num(), round_obj.get_directory())
+                round_obj.read()
+                round_obj.calc_points(drivers, self)
+                round_obj.store_points()
 
         # Calculate and store results for each class
         standings = None
+        standings_prev = None
         for dclass in self.get_driver_classes():
             # Filter out drivers which belong to this class
+            drivers_in_class = [d for d in drivers if dclass in d.get_classes()]
+
+            # Build table with results (ignore the last round). This is needed to calculate how drivers moved up/down
+            table_prev = ResultsTable(self.get_total_rounds(), self.get_grop_rounds(), self.get_rounds_list())
+            table_prev.use_drivers(drivers_in_class)
+            table_prev.set_ignore_last_round()
+            table_prev.process()
+
+            # Build table with results (all rounds)
             table = ResultsTable(self.get_total_rounds(), self.get_grop_rounds(), self.get_rounds_list())
-            for driver in drivers:
-                if dclass in driver.get_classes():
-                    table.add_line(driver)
+            table.use_drivers(drivers_in_class)
+            table.set_driver_prev_position_map(table_prev.get_driver_position_map())
             table.process()
 
             # Store final standings
             if not dclass:
                 standings = table
+                standings_prev = table_prev
 
             # Determine the directory
             dirname = self.get_directory()
@@ -157,13 +161,18 @@ class SeasonData():
                 fname += "-" + dclass
             fname += ".json"
 
-            # Store the table
+            # Store the table to file
             print "  [x] Saving results to '%s'" % fname
             with open(fname, "wb") as json_file:
                 json.dump(table.get_table(), json_file)
 
         # Calculate and store results for teams
+        table_team_prev = ResultsTableTeam(standings_prev, self.get_driver_teams())
+        table_team_prev.process()
+
         table_team = ResultsTableTeam(standings, self.get_driver_teams())
+        table_team.set_team_prev_position_map(table_team_prev.get_team_position_map())
+        table_team.process()
 
         # Determine the directory
         fname = self.get_directory() + "/CLASS-TEAMS.json"

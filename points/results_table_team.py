@@ -6,15 +6,26 @@ class ResultsTableTeam():
 
     def __init__(self, standings, driver_teams):
         self.table = []
-        self.process(standings, driver_teams)
+        self.standings = standings
+        self.driver_teams = driver_teams
+        self.team_prev_position_map = {}
 
     def get_table(self):
         return self.table
 
-    def process(self, standings, driver_teams):
+    def get_team_position_map(self):
+        result = {}
+        for line in self.table:
+            result[line["team"]] = line["position"]
+        return result
+
+    def set_team_prev_position_map(self, position_map):
+        self.team_prev_position_map = position_map
+
+    def process(self):
 
         # Calculate points for each team
-        for team_name, driver_list in driver_teams.iteritems():
+        for team_name, driver_list in self.driver_teams.iteritems():
 
             # Process each driver on the team
             dropped_points = 0
@@ -24,7 +35,7 @@ class ResultsTableTeam():
 
                 # Find the corresponding driver's row in the overall standings
                 driver_row = None
-                for row in standings.get_table():
+                for row in self.standings.get_table():
                     if row["driver"] == driver_name:
                         driver_row = copy.deepcopy(row)
 
@@ -68,3 +79,11 @@ class ResultsTableTeam():
                 line["position"] = line_prev["position"]
             line_prev = line
             position += 1
+
+        # look up position of each team before the round and see how it got changed
+        for line in self.table:
+            if line["team"] in self.team_prev_position_map:
+                pos_prev = self.team_prev_position_map[line["team"]]
+                line["position_change"] = line["position"] - pos_prev
+            else:
+                line["position_change"] = ""

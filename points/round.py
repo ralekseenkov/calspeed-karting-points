@@ -2,6 +2,7 @@ import requests
 import ujson as json
 import os
 import re
+from datetime import datetime
 from operator import methodcaller
 from os import listdir
 from os.path import isfile, isdir, join
@@ -17,6 +18,7 @@ class Round():
         self.sessions_by_type = {}
         self.qualifier = None
         self.main_merged = None
+        self.round_data = None
         self.cache = {}
 
     def get_num(self):
@@ -129,10 +131,17 @@ class Round():
         self.cache["exists"] = result
         return result
 
+    def get_date(self):
+        date_str = self.round_data["event"]["raceDate"]
+        return datetime.strptime(date_str, "%d-%m-%Y")
+
     def read(self):
 
         # determine the directory
         dirname = self.get_directory()
+
+        # read info about the round
+        self.round_data = json.load(open(dirname + "/round.json"))
 
         # read all sessions
         onlyfiles = [f for f in listdir(dirname) if isfile(join(dirname, f))]

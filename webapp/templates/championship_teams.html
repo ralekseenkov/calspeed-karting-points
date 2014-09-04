@@ -17,7 +17,8 @@
 <table class="table">
     <thead>
     <tr>
-        <th>Position</th>
+        <th>Pos</th>
+        <th>+/-</th>
         <th class="col-md-2">Team name</th>
         <th class="col-md-2">Driver name</th>
         {% for round in range(season_data.get_total_rounds()) %}
@@ -27,16 +28,22 @@
         <th>Total (Dr)</th>
         <th>Drops (Team)</th>
         <th>Total (Team)</th>
+        <th>Diff (Team)</th>
     </tr>
     </thead>
 
     <tbody>
     {% for team_item in table.get_table() %}
+
+        {# This is a workaround for Jinja bug. If this is not present, then points diff will not work #}
+        {% if first_place_points %}{% endif %}
+
         {% set rowloop = loop %}
         {% for driver_row in team_item.driver_rows %}
             <tr {% if rowloop.index0 % 2 == 0 %}class="row-striped-odd"{% endif %}>
             {% if loop.index0 == 0 %}
                 <td rowspan="{{ team_item.driver_rows|length }}">{{ team_item.position }}</td>
+                <td rowspan="{{ team_item.driver_rows|length }}">{% if team_item.position_change > 0 %}{{ team_item.position_change }} <span class="glyphicon glyphicon-chevron-down"></span>{% elif team_item.position_change < 0 %}{{ team_item.position_change|abs }} <span class="glyphicon glyphicon-chevron-up"></span>{% else %}{{ team_item.position_change }}{% endif %}</td>
                 <td rowspan="{{ team_item.driver_rows|length }}">{{ team_item.team }}</td>
             {% endif %}
 
@@ -58,9 +65,12 @@
             {% if loop.index0 == 0 %}
             <td rowspan="{{ team_item.driver_rows|length }}">{{ team_item.dropped_points }}</td>
             <td rowspan="{{ team_item.driver_rows|length }}">{{ team_item.total_points }}</td>
+            <td rowspan="{{ team_item.driver_rows|length }}">{% if first_place_points %}{{ team_item.total_points - first_place_points }}{% endif %}</td>
             {% endif %}
         </tr>
         {% endfor %}
+
+        {% if not first_place_points %}{% set first_place_points = team_item.total_points %}{% endif %}
     {% endfor %}
     </tbody>
 
