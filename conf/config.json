@@ -13,6 +13,10 @@
         {
             "season_year": 2014,
             "season_file": "conf/season-2014.json"
+        },
+        {
+            "season_year": 2015,
+            "season_file": "conf/season-2015.json"
         }
     ]
 

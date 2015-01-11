@@ -2,7 +2,7 @@ flask
 flask-login
 flask-security
 requests
-tinydb
+tinydb==1.4.0
 python-Levenshtein
 bcrypt
 argparse
