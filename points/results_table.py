@@ -84,7 +84,8 @@ class ResultsTable():
         if self.ignore_last_round:
             last_round = None
             for r in self.rounds_list:
-                if r.exists():
+                idx = int(r.get_num()) - 1
+                if idx in active_rounds:
                     if last_round is None or r.get_date() > last_round.get_date():
                         last_round = r
             if last_round is not None:
