@@ -126,7 +126,15 @@ def admin_round(selected_season):
             return abort(500, "Cannot download round data from: " + round_obj.get_url(mylaps_id))
 
         round_obj.store_mylaps_id(mylaps_id)
-        season_data.calc_and_store_points()
+
+        try:
+            season_data.calc_and_store_points()
+        except Exception, e:
+            # If something happens during initial calculation of points, we don't want to keep this session around
+            # round_obj.delete_stored_data()
+            # season_data.calc_and_store_points()
+            return abort(500, "Cannot calculate points: " + str(e))
+
         return jsonify()
 
     # This is when we want to delete stored data for a round

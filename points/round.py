@@ -158,7 +158,10 @@ class Round():
 
         # qualifying sessions (read and merge into one)
         for qualifyNum in xrange(6):
-            self.read_session(sessions, "QUALIFY", str(qualifyNum + 1))
+            try:
+                self.read_session(sessions, "QUALIFY", str(qualifyNum + 1))
+            except LookupError, e:
+                print "Can't find qualifying #%s, skipping" % str(qualifyNum + 1)
 
         qualifying_merged = Session(self.config, self, "QUALIFYING")
         for qualify_session in self.sessions_by_type["QUALIFY"]:
@@ -173,11 +176,20 @@ class Round():
         # heats
         for heatNum in ['1', '2']:
             for heatLetter in ['A', 'B', 'C', 'D']:
-                self.read_session(sessions, "HEAT", heatNum + heatLetter)
+                try:
+                    self.read_session(sessions, "HEAT", heatNum + heatLetter)
+                except LookupError, e:
+                    print "Can't find heat #%s, skipping" % str(heatNum + heatLetter)
 
         # mains
         for mainLetter in ['A', 'B', 'C', 'D']:
-            self.read_session(sessions, "MAIN", mainLetter)
+            try:
+                self.read_session(sessions, "MAIN", mainLetter)
+            except LookupError, e:
+                print "Can't find main #%s, skipping" % mainLetter
+
+        print "Number of sessions loaded: %s QUALIFY, %s HEAT, %s MAIN" % (len(self.sessions_by_type["QUALIFY"]), len(self.sessions_by_type["HEAT"]), len(self.sessions_by_type["MAIN"]))
+
 
     def get_url(self, mylaps_id):
         return self.config.get_mylaps_event_page_url() + str(mylaps_id)
@@ -290,28 +302,22 @@ class Round():
 
     def load_points(self):
 
+        # if data has been loaded, then don't do enything
+        if self.sessions_by_type:
+            return
+
         # load all sessions
         self.load_points_session("QUALIFYING")
 
         for heatNum in ['1', '2']:
             for heatLetter in ['A', 'B', 'C', 'D']:
-                self.load_points_session("HEAT", heatNum + heatLetter)
+                try:
+                    self.load_points_session("HEAT", heatNum + heatLetter)
+                except IOError, e:
+                    # do nothing
+                    pass
 
         self.load_points_session("MAIN")
-
-    @staticmethod
-    def generate_session_keys():
-
-        # noinspection PyListCreation
-        keys = []
-        keys.append(("QUALIFYING", ""))
-
-        for heatNum in ['1', '2']:
-            for heatLetter in ['A', 'B', 'C', 'D']:
-                keys.append(("HEAT", heatNum + heatLetter))
-
-        keys.append(("MAIN", ""))
-        return keys
 
     def get_mylaps_id(self):
         round_urls = self.config.get_db_connection().table('round_mylap_ids')
@@ -365,10 +371,24 @@ class Round():
         return len(results)
 
     def count_total_sessions(self):
-        return len(self.generate_session_keys())
+
+        if not self.exists():
+            return 0
+
+        # make sure the data is loaded, so we can count the number of sessions
+        self.load_points()
+
+        # all heats, all mains, and a merged qualifier
+        total = 0
+        keys = ['QUALIFYING', 'HEAT', 'MAIN']
+        for k in keys:
+            if k in self.sessions_by_type:
+                total += len(self.sessions_by_type[k])
+
+        return total
 
     def is_approved(self):
-        return self.count_approved_sessions() >= self.count_total_sessions()
+        return (self.count_total_sessions() > 0) and (self.count_approved_sessions() >= self.count_total_sessions())
 
     def load_point_adjustments(self):
         session_adjustments = self.config.get_db_connection().table('session_adjustments')
