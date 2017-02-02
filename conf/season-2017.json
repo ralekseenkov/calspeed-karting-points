@@ -30,6 +30,41 @@
         },
 
         "driver_teams": {
+            "The Elite Shotgun Gang": [
+                "Patrick Britain",
+                "Rodney Bryant",
+                "Michael Floerchinger"
+            ],
+            "Hubcaps.com": [
+                "Dennis Kimbrell",
+                "Aaron Downs",
+                "Mike Collins"
+            ],
+            "JAL Racing": [
+                "Josa da Silva",
+                "Ariel Rubio",
+                "Luisa Rubio"
+            ],
+            "The Glorious Shotgun Gang": [
+                "Frank Hsu",
+                "Tyler Rousseau",
+                "Sean Fite"
+            ],
+            "Team CRD": [
+                "Miles Calvin",
+                "Steve Jasinski",
+                "Bryan Schubert"
+            ],
+            "Boys Are Back In Town": [
+                "Taylor Hays",
+                "Chris Carter",
+                "Thomas Blackledge"
+            ],
+            "T4 Engineers +1": [
+                "Chris Huerta",
+                "Steve Spring",
+                "Tom Zevin"
+            ]
         },
 
         "QUALIFYING": {

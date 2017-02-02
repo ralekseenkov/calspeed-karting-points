@@ -42,7 +42,10 @@ class ResultsTableTeam():
                 # Handle the situation when the driver is not found is overall standings
                 if driver_row is None:
                     driver_rows.append({
-                        "driver": driver_name
+                        "driver": driver_name,
+                        "rounds": self.standings.round_points_empty,
+                        "dropped_points": 0,
+                        "total_points": 0
                     })
                 else:
                     # Driver position does not matter here, so let's remove it

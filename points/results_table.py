@@ -1,4 +1,5 @@
 from operator import itemgetter
+import copy
 
 
 class ResultsTable():
@@ -10,6 +11,7 @@ class ResultsTable():
         self.table = []
         self.ignore_last_round = False
         self.driver_prev_position_map = {}
+        self.round_points_empty = []
 
     def use_drivers(self, drivers):
         self.drivers = drivers
@@ -104,6 +106,8 @@ class ResultsTable():
                         "exists": round_num in active_rounds
                     }
                 )
+
+            self.round_points_empty = copy.deepcopy(round_points)
 
             # go through each round and update points
             for round_obj in driver.get_points():

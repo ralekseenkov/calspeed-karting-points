@@ -216,39 +216,40 @@ class Round():
 
         # iterate over available sessions
         for group in data["groups"]:
-            for session in group["sessions"]:
-                # Determine name
-                stype_orig = session["type"]
+            if not "Pro" in group["name"]:
+                for session in group["sessions"]:
+                    # Determine name
+                    stype_orig = session["type"]
 
-                if stype_orig == "practice":
-                    stype = "practice"
-                elif stype_orig == "qualify":
-                    stype = "qualify"
-                elif stype_orig == "race":
-                    if "Heat" in session["name"]:
-                        stype = "heat"
-                    elif "Main" in session["name"]:
-                        stype = "main"
+                    if stype_orig == "practice":
+                        stype = "practice"
+                    elif stype_orig == "qualify":
+                        stype = "qualify"
+                    elif stype_orig == "race":
+                        if "Heat" in session["name"]:
+                            stype = "heat"
+                        elif "Main" in session["name"]:
+                            stype = "main"
+                        else:
+                            raise NameError("Unrecognized race name: " + session["name"])
+                    elif stype_orig == "points":
+                        # Skip sessions which represent aggregation of other sessions
+                        # E.g. http://www.mylaps.com/en/events/951921
+                        continue
                     else:
-                        raise NameError("Unrecognized race name: " + session["name"])
-                elif stype_orig == "points":
-                    # Skip sessions which represent aggregation of other sessions
-                    # E.g. http://www.mylaps.com/en/events/951921
-                    continue
-                else:
-                    raise NameError("Unrecognized session type: " + stype_orig)
+                        raise NameError("Unrecognized session type: " + stype_orig)
 
-                sid = self.get_identifier(session["name"])
-                if not sid:
-                    raise NameError("Can't parse out session identifier: " + session["name"])
-                if sid == "MERGE":
-                    # Skip sessions which represent aggregation of other sessions.
-                    # E.g. http://www.mylaps.com/en/events/951921
-                    continue
+                    sid = self.get_identifier(session["name"])
+                    if not sid:
+                        raise NameError("Can't parse out session identifier: " + session["name"])
+                    if sid == "MERGE":
+                        # Skip sessions which represent aggregation of other sessions.
+                        # E.g. http://www.mylaps.com/en/events/951921
+                        continue
 
-                # Download session
-                session_obj = Session(self.config, self, stype, sid)
-                session_obj.download(session["id"])
+                    # Download session
+                    session_obj = Session(self.config, self, stype, sid)
+                    session_obj.download(session["id"])
 
         return True
 
