@@ -13,7 +13,7 @@
             },
             "R": {
                 "name": "Rookie",
-                "description": "Drivers who have competed in four or fewer CalSpeed Karting race events"
+                "description": "Drivers who have competed in five or fewer CalSpeed Karting race events"
             },
             "M": {
                 "name": "Masters",
@@ -25,7 +25,7 @@
             },
             "H": {
                 "name": "Heavy",
-                "description": "Drivers who run with the weight of at least 225 lbs"
+                "description": "Drivers who run with the weight of at least 230 lbs"
             }
         },
 
@@ -38,10 +38,10 @@
             "Hubcaps.com": [
                 "Dennis Kimbrell",
                 "Aaron Downs",
-                "Mike Collins"
+                "Michael Collins"
             ],
             "JAL Racing": [
-                "Josa da Silva",
+                "Jose da Silva",
                 "Ariel Rubio",
                 "Luisa Rubio"
             ],
@@ -70,8 +70,7 @@
         "QUALIFYING": {
             "1": 5,
             "2": 3,
-            "3": 2,
-            "4": 1
+            "3": 1
         },
 
         "HEAT": {
