@@ -214,9 +214,13 @@ class Round():
         with open(dirname + "/round.json", "w") as outfile:
             json.dump(data, outfile)
 
+        # load season data
+        season_data = self.config.get_season_data(self.year)
+        season_key = season_data.get_key()
+
         # iterate over available sessions
         for group in data["groups"]:
-            if not "Pro" in group["name"]:
+            if (season_key is None) or (season_key in group["name"]):
                 for session in group["sessions"]:
                     # Determine name
                     stype_orig = session["type"]

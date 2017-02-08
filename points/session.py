@@ -101,8 +101,10 @@ class Session():
             return float(items[0])
         elif len(items) == 2:
             return float(items[0]) * 60 + float(items[1])
+        elif len(items) == 3:
+            return float(items[0]) * 60 * 60 + float(items[1]) * 60 + float(items[2])
         else:
-            raise LookupError("Invalid time: " + str_time)
+            raise TypeError("Invalid time: " + str_time)
 
     def get_url(self, mylaps_id):
         return self.config.get_mylaps_session_page_url() + str(mylaps_id)
@@ -142,6 +144,7 @@ class Session():
         #   "diff_time" - time difference from P1 (can be empty for P1 and also for last drivers. can also be DNF or DQ)
 
         data = json.load(open(fname))
+
         for row in data["classification"]["rows"]["default"]:
             entry = {
                 "pos": self.clean_string(row["position"]),

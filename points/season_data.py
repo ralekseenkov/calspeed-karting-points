@@ -31,6 +31,9 @@ class SeasonData():
                 completed += 1
         return completed
 
+    def get_key(self):
+        return self.data.get("key")
+
     def get_total_rounds(self):
         return self.data["total_rounds"]
 

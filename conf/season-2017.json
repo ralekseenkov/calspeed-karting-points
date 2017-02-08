@@ -1,6 +1,7 @@
 {
-    "season_year": 2017, 
+    "season_year": 2017,
     "season_data": {
+        "key": "Grand Prix", 
 
         "total_rounds": 10,
 
