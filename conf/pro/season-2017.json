@@ -1,7 +1,7 @@
 {
     "season_year": 2017,
     "season_data": {
-        "key": "Grand Prix", 
+        "key": "Pro Class",
 
         "total_rounds": 10,
 
@@ -11,61 +11,10 @@
             "": {
                 "name": "Overall",
                 "description": "Main championship. All drivers included. Who is going to win?"
-            },
-            "R": {
-                "name": "Rookie",
-                "description": "Drivers who have competed in five or fewer CalSpeed Karting race events"
-            },
-            "M": {
-                "name": "Masters",
-                "description": "Drivers who have achieved the effective age of 40 or greater"
-            },
-            "GM": {
-                "name": "Grand Masters",
-                "description": "Drivers who have achieved the effective age of 55 or greater"
-            },
-            "H": {
-                "name": "Heavy",
-                "description": "Drivers who run with the weight of at least 230 lbs"
             }
         },
 
         "driver_teams": {
-            "The Elite Shotgun Gang": [
-                "Patrick Britain",
-                "Rodney Bryant",
-                "Michael Floerchinger"
-            ],
-            "Hubcaps.com": [
-                "Dennis Kimbrell",
-                "Aaron Downs",
-                "Michael Collins"
-            ],
-            "JAL Racing": [
-                "Jose da Silva",
-                "Ariel Rubio",
-                "Luisa Rubio"
-            ],
-            "The Glorious Shotgun Gang": [
-                "Frank Hsu",
-                "Tyler Rousseau",
-                "Sean Fite"
-            ],
-            "Team CRD": [
-                "Miles Calvin",
-                "Steve Jasinski",
-                "Bryan Schubert"
-            ],
-            "Boys Are Back In Town": [
-                "Taylor Hays",
-                "Chris Carter",
-                "Thomas Blackledge"
-            ],
-            "T4 Engineers +1": [
-                "Chris Huerta",
-                "Steve Spring",
-                "Tom Zevin"
-            ]
         },
 
         "QUALIFYING": {

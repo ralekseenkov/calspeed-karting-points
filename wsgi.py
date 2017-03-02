@@ -128,9 +128,12 @@ def admin_round(selected_season):
         round_obj.store_mylaps_id(mylaps_id)
 
         try:
+            print "Recalculating points after downloading a round"
             season_data.calc_and_store_points()
         except Exception, e:
             # If something happens during initial calculation of points, we don't want to keep this session around
+            print "Cannot recalculate points, may be a bad round"
+            print e
             # round_obj.delete_stored_data()
             # season_data.calc_and_store_points()
             return abort(500, "Cannot calculate points: " + str(e))
@@ -337,4 +340,4 @@ def main_page():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80, threaded=True)
+    app.run(host='0.0.0.0')

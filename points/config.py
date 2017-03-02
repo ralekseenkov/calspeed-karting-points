@@ -1,3 +1,4 @@
+import os
 import ujson as json
 from season_data import SeasonData
 from tinydb import TinyDB, where
@@ -7,7 +8,7 @@ from tinydb.middlewares import ConcurrencyMiddleware
 
 class Config():
     def __init__(self):
-        with open("conf/config.json", "rb") as json_file:
+        with open(os.environ['CONFIG_FILE'], "rb") as json_file:
             self.data = json.load(json_file)
         self.db_connection = TinyDB(self.get_db_directory() + '/tinydb/db.json',
                                     storage=ConcurrencyMiddleware(JSONStorage))

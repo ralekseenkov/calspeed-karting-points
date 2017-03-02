@@ -1,0 +1,19 @@
+{
+    "db_directory": ".db-pro",
+
+    "results_directory": ".results-pro",
+
+    "mylaps_event_page_url_web": "http://www.mylaps.com/en/events/",
+
+    "mylaps_event_page_url": "http://www.mylaps.com/api/eventsessions?id=",
+
+    "mylaps_session_page_url": "http://www.mylaps.com/api/eventclassification?id=",
+
+    "super_series": [
+        {
+            "season_year": 2017,
+            "season_file": "conf/pro/season-2017.json"
+        }
+    ]
+
+}

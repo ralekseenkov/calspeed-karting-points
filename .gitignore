@@ -1,7 +1,7 @@
 .DS_Store
 *.pyc
-env
+env-*
 .idea
-.results
-.db
+.results-*
+.db-*
 

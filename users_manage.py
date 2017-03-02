@@ -36,6 +36,6 @@ if __name__ == "__main__":
     if args["command"] == "login":
         user = User.load_by_username_password(args['username'], args['password'], config)
         if user:
-            print "Login successful with username '%s'!" % args['username']
+            print "Login successful with username '%s' and password '%s'!" % (args['username'], args['password'])
         else:
             print "Login failed with username '%s'!" % args['username']

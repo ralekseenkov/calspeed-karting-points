@@ -40,6 +40,21 @@
                       href="{{ url_for('championship_table', selected_season=selected_season, driver_class="championship_TEAMS") }}" role="button">Results &raquo;</a></p>
             </div>
             {% endif %}
+
+
+            {% if season_data.get_extra_classes() %}
+                {% for dclass, dclass_data in season_data.get_extra_classes().iteritems() %}
+                <div class="col-6 col-sm-6 col-lg-4 menu-item">
+                    <h2>{{ dclass_data.name }}</h2>
+
+                    <p>{{ dclass_data.description }}</p>
+
+                    <p><a class="btn btn-primary"
+                          href="{{ url_for('championship_table', selected_season=selected_season, driver_class="championship_") | replace("grandprix", dclass) }}" role="button">Results &raquo;</a></p>
+                </div>
+                {% endfor %}
+            {% endif %}
+
         </div>
 
         <div class="row">

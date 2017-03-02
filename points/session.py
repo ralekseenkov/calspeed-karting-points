@@ -267,8 +267,9 @@ class Session():
         for driver_class in driver_class_list:
             # check if it's a valid driver class
             if (season_data is not None) and (driver_class not in season_data.get_driver_classes()):
-                raise LookupError("Unrecognized driver class: " + driver)
-            driver_classes.add(driver_class)
+                print "Unrecognized driver class: " + driver
+            else:
+                driver_classes.add(driver_class)
 
         # this will actually remove the part in brackets
         driver_name = re.sub("\[.*?\]", "", driver)

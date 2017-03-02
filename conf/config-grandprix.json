@@ -1,7 +1,7 @@
 {
-    "db_directory": ".db",
+    "db_directory": ".db-grandprix",
 
-    "results_directory": ".results",
+    "results_directory": ".results-grandprix",
 
     "mylaps_event_page_url_web": "http://www.mylaps.com/en/events/",
 
@@ -12,19 +12,19 @@
     "super_series": [
         {
             "season_year": 2014,
-            "season_file": "conf/season-2014.json"
+            "season_file": "conf/grandprix/season-2014.json"
         },
         {
             "season_year": 2015,
-            "season_file": "conf/season-2015.json"
+            "season_file": "conf/grandprix/season-2015.json"
         },
         {
             "season_year": 2016,
-            "season_file": "conf/season-2016.json"
+            "season_file": "conf/grandprix/season-2016.json"
         },
         {
             "season_year": 2017,
-            "season_file": "conf/season-2017.json"
+            "season_file": "conf/grandprix/season-2017.json"
         }
     ]
 

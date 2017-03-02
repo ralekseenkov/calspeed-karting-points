@@ -33,7 +33,13 @@ class Round():
     @staticmethod
     def get_identifier(name):
         # remove the first word from the event name (e.g. "Heat 1 - D")
-        result = name.split(' ', 1)[1]
+        result = name.split(' ', 1)
+
+        # hack to append "1" (if "1D")
+        if len(result) > 1:
+            result = result[1]
+        else:
+            result = "1"
 
         # remove all spaces and dashes
         result = result.replace(" ", "")
@@ -161,7 +167,8 @@ class Round():
             try:
                 self.read_session(sessions, "QUALIFY", str(qualifyNum + 1))
             except LookupError, e:
-                print "Can't find qualifying #%s, skipping" % str(qualifyNum + 1)
+                print "Issue with qualifying #%s, skipping" % str(qualifyNum + 1)
+                print e
 
         qualifying_merged = Session(self.config, self, "QUALIFYING")
         for qualify_session in self.sessions_by_type["QUALIFY"]:
@@ -179,14 +186,16 @@ class Round():
                 try:
                     self.read_session(sessions, "HEAT", heatNum + heatLetter)
                 except LookupError, e:
-                    print "Can't find heat #%s, skipping" % str(heatNum + heatLetter)
+                    print "Issue with heat #%s, skipping" % str(heatNum + heatLetter)
+                    print e
 
         # mains
         for mainLetter in ['A', 'B', 'C', 'D']:
             try:
                 self.read_session(sessions, "MAIN", mainLetter)
             except LookupError, e:
-                print "Can't find main #%s, skipping" % mainLetter
+                print "Issue with main #%s, skipping" % mainLetter
+                print e
 
         print "Number of sessions loaded: %s QUALIFY, %s HEAT, %s MAIN" % (len(self.sessions_by_type["QUALIFY"]), len(self.sessions_by_type["HEAT"]), len(self.sessions_by_type["MAIN"]))
 

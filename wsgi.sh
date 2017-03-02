@@ -2,7 +2,7 @@
 
 set -x
 
-INSTANCE=""
+INSTANCE="$1"
 if [ -z "${INSTANCE}" ]; then
    echo "Must provide instance parameter (e.g. grandprix or pro). Exiting...."
    exit 1
@@ -11,6 +11,7 @@ fi
 VENV_NAME="env-$INSTANCE"
 TINYDB_DIR=".db-$INSTANCE/tinydb"
 CONFIG_FILE="conf/config-$INSTANCE.json"
+WEBAPP_SETTINGS="conf/webapp.default.conf"
 
 # Create virtual env if it doesn't exist
 if [ ! -d "$VENV_NAME" ]; then
@@ -26,8 +27,9 @@ fi
 source $VENV_NAME/bin/activate
 
 # Install dependencies
-pip -q install -r requirements.txt
+pip install -r requirements.txt
 
-# Run user management utility
+# Run webapp
 export CONFIG_FILE
-python users_manage.py $@
+export WEBAPP_SETTINGS
+./$VENV_NAME/bin/uwsgi -s /tmp/uwsgi-$INSTANCE.sock --manage-script-name --mount /$INSTANCE=wsgi:app --virtualenv ./env-$INSTANCE

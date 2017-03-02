@@ -49,6 +49,9 @@ class SeasonData():
     def get_driver_classes(self):
         return self.data["driver_classes"]
 
+    def get_extra_classes(self):
+        return self.data.get("extra_classes")
+
     def get_driver_points(self, ptype, pos_int):
         pos = str(pos_int)
         if not pos in self.data[ptype]:
